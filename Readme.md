@@ -1,4 +1,4 @@
-###Builderberg - Inner Builder Generator
+### Builderberg - Inner Builder Generator
 
 Generates an inner builder for plain old data classes using a builder pattern similar to the one proposed by Joshua Bloch in "Effective Java"[1]. Using this builder turns a field-only class into an immutable class that can only be constructed by using the generated inner builder.
 
@@ -18,7 +18,8 @@ The project has not yet been officially released, but does produce working outpu
 #### Example:
 ##### Before:
 
-`public class PlainOldObject {
+```
+public class PlainOldObject {
     /**
      * Integer field
      */
@@ -28,10 +29,12 @@ The project has not yet been officially released, but does produce working outpu
      * String field
      */
     private String field2;
-}`
+}
+```
 
 ##### After:
-`public class PlainOldObject {
+```
+public class PlainOldObject {
      /**
       * Integer field
       */
@@ -90,7 +93,8 @@ The project has not yet been officially released, but does produce working outpu
              return new PlainOldObject(this);
          }
      }
- }`
+ }
+ ```
  
  ##### Usage:
  `final PlainOldObject instance = PlainOldObject.Builder.create().withField1(7).withField2("SomeString").build();`
