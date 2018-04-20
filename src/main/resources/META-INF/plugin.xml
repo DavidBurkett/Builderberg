@@ -1,0 +1,31 @@
+<idea-plugin>
+    <id>com.burkett.builderberg</id>
+    <name>Builderberg</name>
+    <vendor email="davidburkett38@gmail.com" url="http://davidburkett.github.io/">David Burkett</vendor>
+
+    <description><![CDATA[
+    Generates an inner builder class to assist with backward-compatibility for immutable classes.<br>
+    <em>See Item 2 of "Effective Java" by Joshua Bloch.</em>
+    ]]></description>
+
+    <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/plugin_compatibility.html
+         on how to target different products -->
+    <!-- uncomment to enable plugin in all products
+    <depends>com.intellij.modules.lang</depends>
+    -->
+
+    <extensions defaultExtensionNs="com.intellij">
+        <!-- Add your extensions here -->
+    </extensions>
+
+
+    <actions>
+        <group id="MyPlugin.SampleMenu" text="Builderberg" description="Generate Inner Builder">
+            <add-to-group group-id="ProjectViewPopupMenu" relative-to-action="CutCopyPasteGroup" anchor="before"/>
+            <action id="Myplugin.Textboxes" class="com.burkett.builderberg.InnerBuilderAction" text="Generate Inner Builder" description="Generates Inner Builder">
+                <keyboard-shortcut keymap="$default" first-keystroke="shift alt B"/>
+            </action>
+        </group>
+    </actions>
+
+</idea-plugin>
