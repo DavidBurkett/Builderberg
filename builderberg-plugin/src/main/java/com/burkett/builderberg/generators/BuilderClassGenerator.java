@@ -1,5 +1,6 @@
-package com.burkett.builderberg;
+package com.burkett.builderberg.generators;
 
+import com.intellij.openapi.project.Project;
 import com.intellij.psi.*;
 import com.intellij.psi.util.PsiUtil;
 import com.siyeh.ig.psiutils.TypeUtils;
@@ -7,12 +8,14 @@ import com.siyeh.ig.psiutils.TypeUtils;
 import java.util.Arrays;
 import java.util.List;
 
-public class BuilderClassFactory {
+public class BuilderClassGenerator {
     private static final String BUILDER_CLASS = "Builder";
 
+    private final Project project;
     private final PsiElementFactory psiElementFactory;
 
-    public BuilderClassFactory(final PsiElementFactory psiElementFactory) {
+    public BuilderClassGenerator(final Project project, final PsiElementFactory psiElementFactory) {
+        this.project = project;
         this.psiElementFactory = psiElementFactory;
     }
 
@@ -63,6 +66,13 @@ public class BuilderClassFactory {
             // TODO: Add method comment
 
             final PsiCodeBlock body = withMethod.getBody();
+
+            // Validate input
+            final ValidationGenerator validationGenerator = new ValidationGenerator(project, psiElementFactory);
+            final List<PsiElement> validationStatments = validationGenerator.generateValidationForField(withMethod, field);
+            for (final PsiElement validationStatement : validationStatments) {
+                body.add(validationStatement);
+            }
 
             // Assign value
             final PsiStatement assignStatement =

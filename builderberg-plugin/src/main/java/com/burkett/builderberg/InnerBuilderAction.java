@@ -1,5 +1,6 @@
 package com.burkett.builderberg;
 
+import com.burkett.builderberg.utilities.TopLevelClassFinder;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
@@ -25,51 +26,14 @@ public class InnerBuilderAction extends AnAction {
     public void actionPerformed(final AnActionEvent event) {
         final Project project = event.getProject();
         if (project != null) {
-            final PsiClass topLevelClass = getTopLevelClass(project, event);
+            final PsiClass topLevelClass = TopLevelClassFinder.findTopLevelClass(project, event);
             if (topLevelClass != null) {
                 final PsiElementFactory psiElementFactory = PsiElementFactory.SERVICE.getInstance(project);
-                final Runnable builderGenerator = new InnerBuilderRunnable(psiElementFactory, topLevelClass);
+                final Runnable builderGenerator = new InnerBuilderRunnable(project, psiElementFactory, topLevelClass);
 
                 WriteCommandAction.runWriteCommandAction(project, builderGenerator);
             }
         }
-    }
-
-    private PsiClass getTopLevelClass(final Project project, final AnActionEvent event) {
-        final Navigatable navigatable = event.getData(CommonDataKeys.NAVIGATABLE);
-        if (navigatable != null && navigatable.canNavigate()) {
-            navigatable.navigate(true);
-            if (navigatable instanceof PsiClass) {
-                return (PsiClass) navigatable;
-            }
-        } else {
-            final Editor editor = event.getData(LangDataKeys.EDITOR);
-            final PsiFile file = event.getData(LangDataKeys.PSI_FILE);
-            if (editor != null && file != null) {
-                return getTopLevelClassFromEditor(file, editor);
-            }
-        }
-
-        return null;
-    }
-
-    private PsiClass getTopLevelClassFromEditor(final PsiFile file, final Editor editor) {
-        final int offset = editor.getCaretModel().getOffset();
-        final PsiElement element = file.findElementAt(offset);
-        if (element == null) {
-            return null;
-        }
-
-        final PsiClass topLevelClass = PsiUtil.getTopLevelClass(element);
-        final PsiClass psiClass = PsiTreeUtil.getParentOfType(element, PsiClass.class);
-        if (psiClass != null) {
-            if (psiClass.hasModifierProperty(PsiModifier.STATIC) ||
-                    psiClass.getManager().areElementsEquivalent(psiClass, topLevelClass)) {
-                return psiClass;
-            }
-        }
-
-        return null;
     }
 
     /**

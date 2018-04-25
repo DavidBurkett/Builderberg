@@ -1,20 +1,21 @@
-package com.burkett.builderberg;
+package com.burkett.builderberg.generators;
 
 import com.intellij.psi.*;
 import com.intellij.psi.javadoc.PsiDocComment;
 import org.apache.commons.lang.StringUtils;
 
 
-public class CommentUtility {
+public class JavadocGenerator {
     private final PsiElementFactory psiElementFactory;
 
-    public CommentUtility(final PsiElementFactory psiElementFactory) {
+    public JavadocGenerator(final PsiElementFactory psiElementFactory) {
         this.psiElementFactory = psiElementFactory;
     }
 
     /**
      * Generates the javadoc comment for the given getter methods using information from the {@link PsiField field}.
      */
+    // TODO: This is broken and results in unnecessary new lines in generated javadoc.
     public void generateCommentForGetterMethod(final PsiMethod getterMethod, final PsiField field) {
         final PsiDocComment fieldComment = field.getDocComment();
         if (fieldComment != null) {
