@@ -1,4 +1,4 @@
-package com.burkett.builderberg.utilities;
+package com.github.davidburkett.builderberg.utilities;
 
 import com.intellij.psi.PsiArrayType;
 import com.intellij.psi.PsiClassType;

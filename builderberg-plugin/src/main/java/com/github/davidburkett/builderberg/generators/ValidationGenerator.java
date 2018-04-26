@@ -1,6 +1,6 @@
-package com.burkett.builderberg.generators;
+package com.github.davidburkett.builderberg.generators;
 
-import com.burkett.builderberg.utilities.TypeUtility;
+import com.github.davidburkett.builderberg.utilities.TypeUtility;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.*;
 import com.siyeh.ig.psiutils.TypeUtils;

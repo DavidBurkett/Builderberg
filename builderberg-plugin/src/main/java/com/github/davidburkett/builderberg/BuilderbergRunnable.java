@@ -1,21 +1,22 @@
-package com.burkett.builderberg;
+package com.github.davidburkett.builderberg;
 
-import com.burkett.builderberg.generators.*;
+import com.github.davidburkett.builderberg.generators.*;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.*;
 import com.intellij.psi.codeStyle.CodeStyleManager;
+import com.intellij.psi.codeStyle.JavaCodeStyleManager;
 import com.intellij.psi.util.PsiUtil;
 import com.siyeh.ig.psiutils.TypeUtils;
 
 import java.util.Arrays;
 import java.util.List;
 
-public class InnerBuilderRunnable implements Runnable {
+public class BuilderbergRunnable implements Runnable {
     private final Project project;
     private final PsiElementFactory psiElementFactory;
     private final PsiClass topLevelClass;
 
-    public InnerBuilderRunnable(final Project project, final PsiElementFactory psiElementFactory, final PsiClass topLevelClass) {
+    public BuilderbergRunnable(final Project project, final PsiElementFactory psiElementFactory, final PsiClass topLevelClass) {
         this.project = project;
         this.psiElementFactory = psiElementFactory;
         this.topLevelClass = topLevelClass;
@@ -45,8 +46,17 @@ public class InnerBuilderRunnable implements Runnable {
 
         topLevelClass.add(builderClass);
 
+        final PsiJavaFile psiJavaFile = (PsiJavaFile)topLevelClass.getContainingFile();
+
+        final JavaCodeStyleManager javaCodeStyleManager = JavaCodeStyleManager.getInstance(project);
+        javaCodeStyleManager.shortenClassReferences(psiJavaFile);
+        javaCodeStyleManager.optimizeImports(psiJavaFile);
+
         final CodeStyleManager codeStyleManager = CodeStyleManager.getInstance(project);
-        codeStyleManager.reformat(topLevelClass);
+        codeStyleManager.reformat(psiJavaFile);
+//        codeStyleManager.reformat(topLevelClass);
+//
+//        codeStyleManager.reformatText(psiJavaFile, ContainerUtil.newArrayList(psiJavaFile.getTextRange()));
     }
 
     private void cleanupPreviousBuilder(final PsiClass topLevelClass) {
@@ -79,20 +89,15 @@ public class InnerBuilderRunnable implements Runnable {
         PsiUtil.setModifierProperty(parameter, PsiModifier.FINAL, true);
         constructor.getParameterList().add(parameter);
 
-        final ValidationGenerator validationGenerator = new ValidationGenerator(project, psiElementFactory);
-
         final PsiCodeBlock body = constructor.getBody();
+
+        final PsiStatement validateStatement = psiElementFactory.createStatementFromText("builder.validate();", constructor);
+        body.add(validateStatement);
 
         final List<PsiField> fields = Arrays.asList(topLevelClass.getFields());
         for (PsiField field : fields) {
             // Assign value
             final String fieldName = field.getName();
-
-            // Validate input
-            final List<PsiElement> validationStatments = validationGenerator.generateValidationForField(constructor, field);
-            for (final PsiElement validationStatement : validationStatments) {
-                body.add(validationStatement);
-            }
 
             final PsiStatement assignStatement =
                     psiElementFactory.createStatementFromText("this." + fieldName + " = builder." + fieldName + ";", constructor);

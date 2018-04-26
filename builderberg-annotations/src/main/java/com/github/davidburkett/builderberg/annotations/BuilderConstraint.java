@@ -1,4 +1,4 @@
-package com.burkett.builderberg.annotations;
+package com.github.davidburkett.builderberg.annotations;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

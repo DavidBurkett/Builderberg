@@ -1,4 +1,4 @@
-package com.burkett.builderberg.generators;
+package com.github.davidburkett.builderberg.generators;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.*;
@@ -36,6 +36,7 @@ public class BuilderClassGenerator {
         generateCreateMethod(builderClass);
         generateWithSetters(builderClass, fields);
         generateBuildMethod(topLevelClass, builderClass);
+        generateValidateMethod(topLevelClass, builderClass);
 
         return builderClass;
     }
@@ -120,5 +121,24 @@ public class BuilderClassGenerator {
         PsiUtil.setModifierProperty(constructor, PsiModifier.PRIVATE, true);
 
         builderClass.add(constructor);
+    }
+
+    private void generateValidateMethod(final PsiClass topLevelClass, final PsiClass builderClass) {
+        final ValidationGenerator validationGenerator = new ValidationGenerator(project, psiElementFactory);
+
+        final PsiMethod validateMethod = psiElementFactory.createMethod("validate", PsiType.VOID);
+        PsiUtil.setModifierProperty(validateMethod, PsiModifier.PRIVATE, true);
+
+        final PsiCodeBlock body = validateMethod.getBody();
+
+        for (PsiField field : topLevelClass.getFields()) {
+            // Validate input
+            final List<PsiElement> validationStatments = validationGenerator.generateValidationForField(validateMethod, field);
+            for (final PsiElement validationStatement : validationStatments) {
+                body.add(validationStatement);
+            }
+        }
+
+        builderClass.add(validateMethod);
     }
 }

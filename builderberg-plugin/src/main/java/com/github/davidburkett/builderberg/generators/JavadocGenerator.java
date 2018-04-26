@@ -1,4 +1,4 @@
-package com.burkett.builderberg.generators;
+package com.github.davidburkett.builderberg.generators;
 
 import com.intellij.psi.*;
 import com.intellij.psi.javadoc.PsiDocComment;

@@ -1,6 +1,8 @@
-package com.burkett.builderberg.generators;
+package com.github.davidburkett.builderberg.generators;
 
+import com.intellij.codeInsight.AnnotationUtil;
 import com.intellij.psi.*;
+import com.intellij.psi.util.PsiUtil;
 import com.siyeh.ig.psiutils.TypeUtils;
 
 public class HashCodeGenerator {
@@ -22,9 +24,7 @@ public class HashCodeGenerator {
         // TODO: Generate Javadoc
 
         // Add @Override annotation
-        final PsiAnnotation overrideAnnotation =
-                psiElementFactory.createAnnotationFromText("@Override", topLevelClass);
-        hashCodeMethod.addBefore(overrideAnnotation, hashCodeMethod.getFirstChild());
+        hashCodeMethod.getModifierList().addAnnotation("Override");
 
         // Add return statement
         final PsiCodeBlock methodBody = hashCodeMethod.getBody();

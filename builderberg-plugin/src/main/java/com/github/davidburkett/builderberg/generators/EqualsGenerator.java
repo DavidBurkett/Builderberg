@@ -1,4 +1,4 @@
-package com.burkett.builderberg.generators;
+package com.github.davidburkett.builderberg.generators;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.*;
@@ -29,9 +29,7 @@ public class EqualsGenerator {
         // TODO: Generate Javadoc
 
         // Add @Override annotation
-        final PsiAnnotation overrideAnnotation =
-                psiElementFactory.createAnnotationFromText("@Override", topLevelClass);
-        equalsMethod.addBefore(overrideAnnotation, equalsMethod.getFirstChild());
+        equalsMethod.getModifierList().addAnnotation("Override");
 
         // Add trivial comparison statement
         final PsiCodeBlock methodBody = equalsMethod.getBody();

@@ -20,9 +20,9 @@
 
 
     <actions>
-        <group id="MyPlugin.SampleMenu" text="Builderberg" description="Generate Inner Builder">
+        <group id="Builderberg.SampleMenu" text="Builderberg" description="Generate Inner Builder">
             <add-to-group group-id="ProjectViewPopupMenu" relative-to-action="CutCopyPasteGroup" anchor="before"/>
-            <action id="Myplugin.Textboxes" class="com.burkett.builderberg.InnerBuilderAction" text="Generate Inner Builder" description="Generates Inner Builder">
+            <action id="Builderberg.Textboxes" class="com.github.davidburkett.builderberg.BuilderbergAction" text="Generate Inner Builder" description="Generates Inner Builder">
                 <keyboard-shortcut keymap="$default" first-keystroke="shift alt B"/>
             </action>
         </group>

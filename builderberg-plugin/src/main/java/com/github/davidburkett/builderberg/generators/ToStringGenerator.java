@@ -1,4 +1,4 @@
-package com.burkett.builderberg.generators;
+package com.github.davidburkett.builderberg.generators;
 
 import com.intellij.psi.*;
 import com.siyeh.ig.psiutils.TypeUtils;
@@ -18,9 +18,7 @@ public class ToStringGenerator {
         // TODO: Generate Javadoc
 
         // Add @Override annotation
-        final PsiAnnotation overrideAnnotation =
-                psiElementFactory.createAnnotationFromText("@Override", topLevelClass);
-        toStringMethod.addBefore(overrideAnnotation, toStringMethod.getFirstChild());
+        toStringMethod.getModifierList().addAnnotation("Override");
 
         // Add return statement
         final PsiCodeBlock methodBody = toStringMethod.getBody();

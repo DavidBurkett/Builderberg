@@ -1,4 +1,4 @@
-package com.burkett.builderberg.utilities;
+package com.github.davidburkett.builderberg.utilities;
 
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
