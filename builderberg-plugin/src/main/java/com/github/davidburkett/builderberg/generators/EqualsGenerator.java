@@ -17,6 +17,10 @@ public class EqualsGenerator {
         this.psiElementFactory = psiElementFactory;
     }
 
+    /**
+     * Generates an equals method for the given {@link PsiClass topLevelClass} and adds it to that class.
+     * @param topLevelClass The {@link PsiClass} to generate an equals method for.
+     */
     public void generateEqualsMethod(final PsiClass topLevelClass) {
         // Create equals method
         final PsiMethod equalsMethod =
@@ -40,12 +44,12 @@ public class EqualsGenerator {
         // Add type comparison
         final PsiType type = TypeUtils.getType(topLevelClass);
         final String typeName = type.getCanonicalText();
-        final String typeComparison = "if (!(o instanceof " + typeName + ")) { return false; }";
+        final String typeComparison = String.format("if (!(o instanceof %s)) { return false; }", typeName);
         final PsiStatement typeComparisonStatement = psiElementFactory.createStatementFromText(typeComparison, equalsMethod);
         methodBody.add(typeComparisonStatement);
 
         // Add type casting
-        final String typeCasting = "final " + typeName + " obj = (" + typeName + ") o;";
+        final String typeCasting = String.format("final %s obj = (%s) o;", typeName, typeName);
         final PsiStatement typeCastStatement = psiElementFactory.createStatementFromText(typeCasting, equalsMethod);
         methodBody.add(typeCastStatement);
 
@@ -65,7 +69,7 @@ public class EqualsGenerator {
         final String fieldName = field.getName();
         final PsiType fieldType = field.getType();
         if (fieldType instanceof PsiPrimitiveType) {
-            final String comparison = "if (field != obj.field) { return false; }".replaceAll("field", fieldName);
+            final String comparison = String.format("if (%s != obj.%s) { return false; }", fieldName, fieldName);
             final PsiStatement comparisonStatement = psiElementFactory.createStatementFromText(comparison, equalsMethod);
             codeBlock.add(comparisonStatement);
         } else {

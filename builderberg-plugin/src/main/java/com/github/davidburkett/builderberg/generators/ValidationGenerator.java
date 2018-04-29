@@ -21,8 +21,7 @@ public class ValidationGenerator {
         final List<PsiElement> validationStatements = Lists.newArrayList();
         final PsiAnnotation[] annotations = field.getAnnotations();
         for (final PsiAnnotation annotation : annotations) {
-            // TODO: Determine if this equals statement works.
-            if (annotation.getQualifiedName().equals("BuilderConstraint")) {
+            if (annotation.getQualifiedName().equals("com.github.davidburkett.builderberg.annotations.BuilderConstraint")) {
                 final PsiAnnotationParameterList annotationParameterList = annotation.getParameterList();
                 final PsiNameValuePair[] attributes = annotationParameterList.getAttributes();
                 for (final PsiNameValuePair attribute : attributes) {

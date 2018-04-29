@@ -1,14 +1,89 @@
-group 'com.github.davidburkett'
-version '1.0-SNAPSHOT'
 
 apply plugin: 'java'
+apply plugin: 'maven'
+apply plugin: 'signing'
 
-sourceCompatibility = 1.8
+group = 'com.github.davidburkett'
+archivesBaseName = 'builderberg-annotations'
+version = '1.0.1'
+ext.packaging = 'jar'
+
 
 repositories {
     mavenCentral()
 }
 
 dependencies {
-    testCompile group: 'junit', name: 'junit', version: '4.12'
+    compile group: 'commons-lang', name: 'commons-lang', version: '2.6'
+    compile group: 'commons-io', name: 'commons-io', version: '2.4'
+    compile group: 'org.codehaus.groovy', name: 'groovy-all', version: '2.3.10'
+    testCompile group: 'org.spockframework', name: 'spock-core', version: '0.7-groovy-2.0'
+}
+
+task javadocJar(type: Jar) {
+    classifier = 'javadoc'
+    from javadoc
+}
+
+task sourcesJar(type: Jar) {
+    classifier = 'sources'
+    from sourceSets.main.allSource
+}
+
+artifacts {
+    archives jar
+    archives javadocJar
+    archives sourcesJar
+}
+
+//********* artifact signing *********
+signing {
+    sign configurations.archives
+}
+
+
+uploadArchives {
+    repositories {
+        mavenDeployer {
+            beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
+
+            repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
+                authentication(userName: sonatypeUsername, password: sonatypePassword)
+            }
+
+            snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots/") {
+                authentication(userName: sonatypeUsername, password: sonatypePassword)
+            }
+
+            pom.project {
+                name 'builderberg-annotations'
+                packaging 'jar'
+                description 'Generates an inner builder class to assist with backward-compatibility for immutable classes.\n' +
+                        'See Item 2 of "Effective Java" by Joshua Bloch'
+                url 'http://davidburkett.github.com/builderberg'
+
+                scm {
+                    url 'scm:git@github.com:DavidBurkett/Builderberg.git'
+                    connection 'scm:git@github.com:DavidBurkett/Builderberg.git'
+                    developerConnection 'scm:git@github.com:DavidBurkett/Builderberg.git'
+                }
+
+                licenses {
+                    license {
+                        name 'The Apache Software License, Version 2.0'
+                        url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                        distribution 'repo'
+                    }
+                }
+
+                developers {
+                    developer {
+                        id 'burkett38'
+                        name 'David Burkett'
+                        email 'davidburkett38@gmail.com'
+                    }
+                }
+            }
+        }
+    }
 }

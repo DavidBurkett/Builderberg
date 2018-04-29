@@ -9,6 +9,9 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.*;
 
+/**
+ * Builderberg's implementation of Intellij's "AnAction" event handler.
+ */
 public class BuilderbergAction extends AnAction {
     public BuilderbergAction() {
         super("InnerBuilderBuilder");
@@ -23,14 +26,9 @@ public class BuilderbergAction extends AnAction {
         if (project != null) {
             final PsiClass topLevelClass = TopLevelClassFinder.findTopLevelClass(project, event);
             if (topLevelClass != null) {
-                final PsiElementFactory psiElementFactory = PsiElementFactory.SERVICE.getInstance(project);
-                final Runnable builderGenerator = new BuilderbergRunnable(project, psiElementFactory, topLevelClass);
+                final Runnable builderGenerator = BuilderbergRunnable.create(project, topLevelClass);
 
                 WriteCommandAction.runWriteCommandAction(project, builderGenerator);
-
-
-                /*final CodeStyleManager codeStyleManager = CodeStyleManager.getInstance(project);
-                codeStyleManager.reformat(topLevelClass.getContainingFile());*/
             }
         }
     }

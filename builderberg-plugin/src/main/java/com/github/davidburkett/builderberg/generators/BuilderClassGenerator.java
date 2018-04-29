@@ -24,6 +24,7 @@ public class BuilderClassGenerator {
      */
     public PsiClass createBuilderClass(final PsiClass topLevelClass) {
         final PsiClass builderClass = psiElementFactory.createClass(BUILDER_CLASS);
+        // TODO: Handle generics
 
         PsiUtil.setModifierProperty(builderClass, PsiModifier.PUBLIC, true);
         PsiUtil.setModifierProperty(builderClass, PsiModifier.STATIC, true);

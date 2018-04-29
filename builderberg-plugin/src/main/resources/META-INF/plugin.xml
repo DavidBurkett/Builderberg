@@ -18,6 +18,10 @@
         <!-- Add your extensions here -->
     </extensions>
 
+    <change-notes>
+        1.0.0 - Initial Release
+    </change-notes>
+
 
     <actions>
         <group id="Builderberg.SampleMenu" text="Builderberg" description="Generate Inner Builder">

@@ -21,8 +21,8 @@ public @interface BuilderConstraint {
     boolean negativeOnly() default false;
     boolean positiveOnly() default false;
 
-    double minValue();
-    double maxValue();
+    double minValue() default 0.0;
+    double maxValue() default 0.0;
 
-    String customValidation();
+    String customValidation() default "";
 }
