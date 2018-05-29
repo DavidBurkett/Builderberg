@@ -21,6 +21,8 @@ public class BuilderClassGenerator {
 
     /**
      * Creates the inner builder class for the given {@link PsiClass topLevelClass}, but does not add it to the class.
+     * @param topLevelClass The non-null top-level class.
+     * @return The generated inner builder class.
      */
     public PsiClass createBuilderClass(final PsiClass topLevelClass) {
         final PsiClass builderClass = psiElementFactory.createClass(BUILDER_CLASS);
@@ -64,15 +66,14 @@ public class BuilderClassGenerator {
             PsiUtil.setModifierProperty(parameter, PsiModifier.FINAL, true);
             withMethod.getParameterList().add(parameter);
 
-            // TODO: Apply validation
             // TODO: Add method comment
 
             final PsiCodeBlock body = withMethod.getBody();
 
             // Validate input
             final ValidationGenerator validationGenerator = new ValidationGenerator(project, psiElementFactory);
-            final List<PsiElement> validationStatments = validationGenerator.generateValidationForField(withMethod, field);
-            for (final PsiElement validationStatement : validationStatments) {
+            final List<PsiStatement> validationStatments = validationGenerator.generateValidationForField(withMethod, field);
+            for (final PsiStatement validationStatement : validationStatments) {
                 body.add(validationStatement);
             }
 
@@ -134,8 +135,8 @@ public class BuilderClassGenerator {
 
         for (PsiField field : topLevelClass.getFields()) {
             // Validate input
-            final List<PsiElement> validationStatments = validationGenerator.generateValidationForField(validateMethod, field);
-            for (final PsiElement validationStatement : validationStatments) {
+            final List<PsiStatement> validationStatments = validationGenerator.generateValidationForField(validateMethod, field);
+            for (final PsiStatement validationStatement : validationStatments) {
                 body.add(validationStatement);
             }
         }

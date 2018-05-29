@@ -15,7 +15,7 @@ apply plugin: 'signing'
 
 group = 'com.github.davidburkett'
 archivesBaseName = 'builderberg-plugin'
-version = '1.0.0'
+version = '1.0.1'
 ext.packaging = 'jar'
 
 

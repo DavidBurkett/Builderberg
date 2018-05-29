@@ -49,10 +49,9 @@ public class ToStringGenerator {
     }
 
     private String createStringForField(final PsiField field) {
-        final boolean isPrimitive = (field.getType() instanceof PsiPrimitiveType);
-        final String fieldToString = field.getName() + (isPrimitive ? "" : ".toString()");
+        final String fieldName = field.getName();
 
-        return "\\\"" + field.getName() + "\\\": \\\"\" + " + fieldToString + " + \"\\\"";
+        return "\\\"" + fieldName + "\\\": \\\"\" + " + fieldName + " + \"\\\"";
         //stringBuilder.append("\\\"").append(field.getName()).append("\\\": \\\"\" + ").append(field.getName()).append(" + \"\\\"");
     }
 }

@@ -1,6 +1,7 @@
 package com.github.davidburkett.builderberg.generators;
 
 import com.github.davidburkett.builderberg.utilities.TypeUtility;
+import com.github.davidburkett.builderberg.utilities.ValidationUtility;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.*;
 import com.siyeh.ig.psiutils.TypeUtils;
@@ -8,6 +9,10 @@ import org.fest.util.Lists;
 
 import java.util.List;
 
+/**
+ * Generates field validation logic to handle BuilderConstraints.
+ * @author David Burkett
+ */
 public class ValidationGenerator {
     private final Project project;
     private final PsiElementFactory psiElementFactory;
@@ -17,20 +22,20 @@ public class ValidationGenerator {
         this.psiElementFactory = psiElementFactory;
     }
 
-    public List<PsiElement> generateValidationForField(final PsiMethod method, final PsiField field) {
-        final List<PsiElement> validationStatements = Lists.newArrayList();
-        final PsiAnnotation[] annotations = field.getAnnotations();
-        for (final PsiAnnotation annotation : annotations) {
-            if (annotation.getQualifiedName().equals("com.github.davidburkett.builderberg.annotations.BuilderConstraint")) {
-                final PsiAnnotationParameterList annotationParameterList = annotation.getParameterList();
-                final PsiNameValuePair[] attributes = annotationParameterList.getAttributes();
-                for (final PsiNameValuePair attribute : attributes) {
-                    if (attribute.getLiteralValue().equals("true")) {
-                        final PsiStatement validationStatement = generateValidationStatement(method, field, attribute);
-                        validationStatements.add(validationStatement);
-                    }
-                }
-            }
+    /**
+     * Generates validation logic for all of the BuilderConstraints the field is annotated with, within the context of the given method.
+     * NOTE: This generates the validation statements, but does not add them to the method.
+     * @param method The {@link PsiMethod} the validation logic will be added to.
+     * @param field The {@link PsiField} to validate.
+     * @return The {@link List} of generated validation {@link PsiStatement}s.
+     */
+    public List<PsiStatement> generateValidationForField(final PsiMethod method, final PsiField field) {
+        final List<PsiStatement> validationStatements = Lists.newArrayList();
+
+        final List<PsiNameValuePair> builderConstraints = ValidationUtility.getBuilderConstraintsForField(field);
+        for (final PsiNameValuePair builderConstraint : builderConstraints) {
+            final PsiStatement validationStatement = generateValidationStatement(method, field, builderConstraint);
+            validationStatements.add(validationStatement);
         }
 
         return validationStatements;
