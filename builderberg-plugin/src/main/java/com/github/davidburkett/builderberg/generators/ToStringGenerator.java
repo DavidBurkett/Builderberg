@@ -5,9 +5,11 @@ import com.siyeh.ig.psiutils.TypeUtils;
 
 public class ToStringGenerator {
     private final PsiElementFactory psiElementFactory;
+    private final JavadocGenerator javadocGenerator;
 
     public ToStringGenerator(final PsiElementFactory psiElementFactory) {
         this.psiElementFactory = psiElementFactory;
+        this.javadocGenerator = new JavadocGenerator(psiElementFactory);
     }
 
     public void generateToStringMethod(final PsiClass topLevelClass) {
@@ -15,7 +17,8 @@ public class ToStringGenerator {
         final PsiMethod toStringMethod =
                 psiElementFactory.createMethod("toString", TypeUtils.getStringType(topLevelClass));
 
-        // TODO: Generate Javadoc
+        // Generate inheritDoc javadoc
+        javadocGenerator.generateInheritDocJavadocForMethod(toStringMethod);
 
         // Add @Override annotation
         toStringMethod.getModifierList().addAnnotation("Override");

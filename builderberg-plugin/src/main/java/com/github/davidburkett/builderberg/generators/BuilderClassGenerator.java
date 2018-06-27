@@ -4,6 +4,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.psi.*;
 import com.intellij.psi.util.PsiUtil;
 import com.siyeh.ig.psiutils.TypeUtils;
+import org.fest.util.Lists;
 
 import java.util.Arrays;
 import java.util.List;
@@ -32,7 +33,7 @@ public class BuilderClassGenerator {
         PsiUtil.setModifierProperty(builderClass, PsiModifier.STATIC, true);
         PsiUtil.setModifierProperty(builderClass, PsiModifier.FINAL, true);
 
-        final List<PsiField> fields = Arrays.asList(topLevelClass.getFields());
+        final List<PsiField> fields = getNonStaticFields(topLevelClass);
 
         generateFields(builderClass, fields);
         generateConstructor(builderClass);
@@ -42,6 +43,19 @@ public class BuilderClassGenerator {
         generateValidateMethod(topLevelClass, builderClass);
 
         return builderClass;
+    }
+
+    private List<PsiField> getNonStaticFields(final PsiClass topLevelClass) {
+        final List<PsiField> nonStaticFields = Lists.newArrayList();
+
+        final List<PsiField> fields = Arrays.asList(topLevelClass.getFields());
+        for (final PsiField field : fields) {
+            if (!field.hasModifierProperty(PsiModifier.STATIC)) {
+                nonStaticFields.add(field);
+            }
+        }
+
+        return nonStaticFields;
     }
 
     private void generateFields(final PsiClass builderClass, final List<PsiField> fields) {

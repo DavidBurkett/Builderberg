@@ -21,7 +21,6 @@ public class JavadocUtil {
         // TODO: Also check for line comments, if no javadoc exists.
         final PsiDocComment fieldComment = field.getDocComment();
         if (fieldComment != null) {
-            final StringBuilder fieldJavaDoc = new StringBuilder();
             final PsiElement[] descriptionElements = fieldComment.getDescriptionElements();
 
             String fieldCommentText = "";

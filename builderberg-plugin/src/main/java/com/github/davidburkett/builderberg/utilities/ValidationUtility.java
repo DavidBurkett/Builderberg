@@ -18,7 +18,7 @@ public class ValidationUtility {
                 final PsiAnnotationParameterList annotationParameterList = annotation.getParameterList();
                 final PsiNameValuePair[] attributes = annotationParameterList.getAttributes();
                 for (final PsiNameValuePair attribute : attributes) {
-                    if (!attribute.getLiteralValue().equals("false")) {
+                    if (attribute.getLiteralValue() != null && !attribute.getLiteralValue().equals("false")) {
                         builderConstraints.add(attribute);
                     }
                 }

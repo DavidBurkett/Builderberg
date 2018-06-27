@@ -3,18 +3,17 @@ package com.github.davidburkett.builderberg.generators;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.*;
 import com.intellij.psi.search.GlobalSearchScope;
-import com.intellij.psi.util.PsiUtil;
 import com.siyeh.ig.psiutils.TypeUtils;
-
-import java.lang.reflect.Type;
 
 public class EqualsGenerator {
     private final Project project;
     private final PsiElementFactory psiElementFactory;
+    private final JavadocGenerator javadocGenerator;
 
     public EqualsGenerator(final Project project, final PsiElementFactory psiElementFactory) {
         this.project = project;
         this.psiElementFactory = psiElementFactory;
+        this.javadocGenerator = new JavadocGenerator(psiElementFactory);
     }
 
     /**
@@ -30,7 +29,8 @@ public class EqualsGenerator {
         final PsiParameter parameter = psiElementFactory.createParameter("o", PsiType.getJavaLangObject(PsiManager.getInstance(project), GlobalSearchScope.allScope(project)));
         equalsMethod.getParameterList().add(parameter);
 
-        // TODO: Generate Javadoc
+        // Generate inheritDoc javadoc
+        javadocGenerator.generateInheritDocJavadocForMethod(equalsMethod);
 
         // Add @Override annotation
         equalsMethod.getModifierList().addAnnotation("Override");

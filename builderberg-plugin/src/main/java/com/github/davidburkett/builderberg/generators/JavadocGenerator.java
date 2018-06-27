@@ -15,6 +15,12 @@ public class JavadocGenerator {
         this.psiElementFactory = psiElementFactory;
     }
 
+    public void generateInheritDocJavadocForMethod(final PsiMethod method) {
+        final String inheritDocString = "/**\n * {@inheritDoc}\n */";
+        final PsiComment comment = psiElementFactory.createCommentFromText(inheritDocString, method);
+        JavadocUtil.setMethodComment(method, comment);
+    }
+
     /**
      * Generates the javadoc comment for the given getter methods using information from the {@link PsiField field}.
      * @param getterMethod The non-null getter {@link PsiMethod method}.

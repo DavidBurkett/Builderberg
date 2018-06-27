@@ -6,7 +6,6 @@ import com.intellij.psi.*;
 import com.intellij.psi.codeStyle.CodeStyleManager;
 import com.intellij.psi.codeStyle.JavaCodeStyleManager;
 import com.intellij.psi.util.PsiUtil;
-import com.intellij.vcs.log.Hash;
 import com.siyeh.ig.psiutils.TypeUtils;
 
 import java.util.Arrays;
@@ -121,12 +120,14 @@ public class BuilderbergRunnable implements Runnable {
         // Assign values
         final List<PsiField> fields = Arrays.asList(topLevelClass.getFields());
         for (PsiField field : fields) {
-            final String fieldName = field.getName();
+            if (!field.hasModifierProperty(PsiModifier.STATIC)) {
+                final String fieldName = field.getName();
 
-            final String assignStatementText = String.format("this.%s = builder.%s;", fieldName, fieldName);
-            final PsiStatement assignStatement =
-                    psiElementFactory.createStatementFromText(assignStatementText, constructor);
-            body.add(assignStatement);
+                final String assignStatementText = String.format("this.%s = builder.%s;", fieldName, fieldName);
+                final PsiStatement assignStatement =
+                        psiElementFactory.createStatementFromText(assignStatementText, constructor);
+                body.add(assignStatement);
+            }
         }
 
         topLevelClass.add(constructor);
