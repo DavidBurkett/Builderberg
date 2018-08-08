@@ -88,7 +88,8 @@ public class BuilderClassGenerator {
             PsiUtil.setModifierProperty(withMethod, PsiModifier.PUBLIC, true);
 
             // Add parameter
-            final PsiParameter parameter = psiElementFactory.createParameter(fieldName, field.getType());
+            final PsiType psiType = getSanitizedType(field.getType());
+            final PsiParameter parameter = psiElementFactory.createParameter(fieldName, psiType);
             PsiUtil.setModifierProperty(parameter, PsiModifier.FINAL, true);
             withMethod.getParameterList().add(parameter);
 
@@ -114,6 +115,14 @@ public class BuilderClassGenerator {
 
             builderClass.add(withMethod);
         }
+    }
+
+    private PsiType getSanitizedType(final PsiType psiType) {
+        if (psiType instanceof PsiArrayType) {
+            return new PsiEllipsisType(psiType.getDeepComponentType());
+        }
+
+        return psiType;
     }
 
     private void generateCreateMethod(final PsiClass builderClass) {
