@@ -1,6 +1,7 @@
 package com.github.davidburkett.builderberg;
 
 import com.github.davidburkett.builderberg.generators.*;
+import com.github.davidburkett.builderberg.utilities.TypeUtility;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.*;
 import com.intellij.psi.codeStyle.CodeStyleManager;
@@ -103,11 +104,10 @@ public class BuilderbergRunnable implements Runnable {
     }
 
     private void generateConstructor(final PsiClass builderClass) {
-        // TODO: Handle generics
         final PsiMethod constructor = psiElementFactory.createConstructor();
         PsiUtil.setModifierProperty(constructor, PsiModifier.PRIVATE, true);
 
-        final PsiType builderType = TypeUtils.getType(builderClass);
+        final PsiType builderType = TypeUtility.getTypeWithGenerics(builderClass, builderClass.getTypeParameters());
         final PsiParameter parameter = psiElementFactory.createParameter("builder", builderType);
         PsiUtil.setModifierProperty(parameter, PsiModifier.FINAL, true);
         constructor.getParameterList().add(parameter);

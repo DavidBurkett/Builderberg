@@ -1,10 +1,10 @@
 package com.github.davidburkett.builderberg.utilities;
 
-import com.intellij.psi.PsiArrayType;
-import com.intellij.psi.PsiClassType;
-import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiType;
+import com.intellij.psi.*;
 import com.siyeh.ig.psiutils.TypeUtils;
+import org.fest.util.Maps;
+
+import java.util.Map;
 
 public class TypeUtility {
     /**
@@ -87,5 +87,22 @@ public class TypeUtility {
         }
 
         throw new IllegalArgumentException();
+    }
+
+    /**
+     * Creates a PsiType for a PsiClass enriched with generic substitution information if available
+     */
+    public static PsiType getTypeWithGenerics(final PsiClass psiClass, final PsiTypeParameter... classTypeParameters) {
+        final PsiElementFactory factory = JavaPsiFacade.getElementFactory(psiClass.getProject());
+        if (classTypeParameters.length > 0) {
+            final Map<PsiTypeParameter, PsiType> substitutionMap = Maps.newHashMap();
+            for (PsiTypeParameter typeParameter : classTypeParameters) {
+                substitutionMap.put(typeParameter, factory.createType(typeParameter));
+            }
+
+            return factory.createType(psiClass, factory.createSubstitutor(substitutionMap));
+        } else {
+            return factory.createType(psiClass);
+        }
     }
 }

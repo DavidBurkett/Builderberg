@@ -1,5 +1,8 @@
 package com.github.davidburkett.builderberg.generators;
 
+import com.github.davidburkett.builderberg.utilities.ClassFactory;
+import com.github.davidburkett.builderberg.utilities.TypeUtility;
+import com.google.common.collect.ImmutableList;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.*;
 import com.intellij.psi.util.PsiUtil;
@@ -13,10 +16,12 @@ public class BuilderClassGenerator {
     private static final String BUILDER_CLASS = "Builder";
 
     private final Project project;
+    private final ClassFactory classFactory;
     private final PsiElementFactory psiElementFactory;
 
     public BuilderClassGenerator(final Project project, final PsiElementFactory psiElementFactory) {
         this.project = project;
+        this.classFactory = new ClassFactory(psiElementFactory);
         this.psiElementFactory = psiElementFactory;
     }
 
@@ -26,36 +31,43 @@ public class BuilderClassGenerator {
      * @return The generated inner builder class.
      */
     public PsiClass createBuilderClass(final PsiClass topLevelClass) {
-        final PsiClass builderClass = psiElementFactory.createClass(BUILDER_CLASS);
-        // TODO: Handle generics
+        final PsiClass builderClass =
+                classFactory.createClass(BUILDER_CLASS, topLevelClass.getTypeParameters(), ImmutableList.of(PsiModifier.PUBLIC, PsiModifier.STATIC, PsiModifier.FINAL));
 
-        PsiUtil.setModifierProperty(builderClass, PsiModifier.PUBLIC, true);
-        PsiUtil.setModifierProperty(builderClass, PsiModifier.STATIC, true);
-        PsiUtil.setModifierProperty(builderClass, PsiModifier.FINAL, true);
-
-        final List<PsiField> fields = getNonStaticFields(topLevelClass);
+        final List<PsiField> fields = getQualifyingFields(topLevelClass);
 
         generateFields(builderClass, fields);
         generateConstructor(builderClass);
         generateCreateMethod(builderClass);
         generateWithSetters(builderClass, fields);
         generateBuildMethod(topLevelClass, builderClass);
-        generateValidateMethod(topLevelClass, builderClass);
+        generateValidateMethod(builderClass, fields);
 
         return builderClass;
     }
 
-    private List<PsiField> getNonStaticFields(final PsiClass topLevelClass) {
-        final List<PsiField> nonStaticFields = Lists.newArrayList();
+    private List<PsiField> getQualifyingFields(final PsiClass topLevelClass) {
+        final List<PsiField> qualifyingFields = Lists.newArrayList();
 
         final List<PsiField> fields = Arrays.asList(topLevelClass.getFields());
         for (final PsiField field : fields) {
-            if (!field.hasModifierProperty(PsiModifier.STATIC)) {
-                nonStaticFields.add(field);
+
+            // Skip final fields that are already initialized.
+            if (field.hasModifierProperty(PsiModifier.FINAL)) {
+                if (field.getInitializer() != null) {
+                    continue;
+                }
             }
+
+            // Skip static fields.
+            if (field.hasModifierProperty(PsiModifier.STATIC)) {
+                continue;
+            }
+
+            qualifyingFields.add(field);
         }
 
-        return nonStaticFields;
+        return qualifyingFields;
     }
 
     private void generateFields(final PsiClass builderClass, final List<PsiField> fields) {
@@ -111,22 +123,24 @@ public class BuilderClassGenerator {
         PsiUtil.setModifierProperty(createMethod, PsiModifier.STATIC, true);
 
         final PsiCodeBlock body = createMethod.getBody();
-        final String className = builderClass.getName();
+        final String builderClassName = builderClass.getName();
+        final String generics = builderClass.hasTypeParameters() ? "<>" : "";
         final PsiStatement returnStatement =
-                psiElementFactory.createStatementFromText("return new " + className + "();", createMethod);
+                psiElementFactory.createStatementFromText("return new " + builderClassName + generics + "();", createMethod);
         body.add(returnStatement);
 
         builderClass.add(createMethod);
     }
 
     private void generateBuildMethod(final PsiClass topLevelClass, final PsiClass builderClass) {
-        final PsiType topLevelType = TypeUtils.getType(topLevelClass); // TODO: Figure out why this is fully qualified
+        final PsiType topLevelType = TypeUtility.getTypeWithGenerics(topLevelClass, topLevelClass.getTypeParameters());
         final PsiMethod buildMethod = psiElementFactory.createMethod("build", topLevelType);
 
         final PsiCodeBlock body = buildMethod.getBody();
         final String className = topLevelClass.getName();
+        final String generics = topLevelClass.hasTypeParameters() ? "<>" : "";
         final PsiStatement returnStatement =
-                psiElementFactory.createStatementFromText("return new " + className + "(this);", buildMethod);
+                psiElementFactory.createStatementFromText("return new " + className + generics + "(this);", buildMethod);
         body.add(returnStatement);
 
         builderClass.add(buildMethod);
@@ -139,7 +153,7 @@ public class BuilderClassGenerator {
         builderClass.add(constructor);
     }
 
-    private void generateValidateMethod(final PsiClass topLevelClass, final PsiClass builderClass) {
+    private void generateValidateMethod(final PsiClass builderClass, final List<PsiField> fields) {
         final ValidationGenerator validationGenerator = new ValidationGenerator(project, psiElementFactory);
 
         final PsiMethod validateMethod = psiElementFactory.createMethod("validate", PsiType.VOID);
@@ -147,7 +161,7 @@ public class BuilderClassGenerator {
 
         final PsiCodeBlock body = validateMethod.getBody();
 
-        for (PsiField field : topLevelClass.getFields()) {
+        for (PsiField field : fields) {
             // Validate input
             final List<PsiStatement> validationStatments = validationGenerator.generateValidationForField(validateMethod, field);
             for (final PsiStatement validationStatement : validationStatments) {
