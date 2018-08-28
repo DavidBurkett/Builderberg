@@ -1,13 +1,14 @@
 package com.github.davidburkett.builderberg;
 
 import com.github.davidburkett.builderberg.utilities.TopLevelClassFinder;
+import com.github.davidburkett.builderberg.utilities.VersionUtility;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.command.WriteCommandAction;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.psi.*;
+import com.intellij.psi.PsiClass;
 
 /**
  * Builderberg's implementation of Intellij's "AnAction" event handler.
@@ -26,9 +27,13 @@ public class BuilderbergAction extends AnAction {
         if (project != null) {
             final PsiClass topLevelClass = TopLevelClassFinder.findTopLevelClass(project, event);
             if (topLevelClass != null) {
-                final Runnable builderGenerator = BuilderbergRunnable.create(project, topLevelClass);
-
-                WriteCommandAction.runWriteCommandAction(project, builderGenerator);
+                if (VersionUtility.doesMeetMinimumVersion(topLevelClass)) {
+                    final Runnable builderGenerator = BuilderbergRunnable.create(project, topLevelClass);
+                    WriteCommandAction.runWriteCommandAction(project, builderGenerator);
+                } else {
+                    final AlertDialog alertDialog = new AlertDialog(project);
+                    alertDialog.show();
+                }
             }
         }
     }

@@ -12,15 +12,13 @@ public class ValidationUtility {
     public static List<PsiNameValuePair> getBuilderConstraintsForField(final PsiField field) {
         final List<PsiNameValuePair> builderConstraints = Lists.newArrayList();
 
-        final PsiAnnotation[] annotations = field.getAnnotations();
-        for (final PsiAnnotation annotation : annotations) {
-            if (annotation.getQualifiedName().equals("com.github.davidburkett.builderberg.annotations.BuilderConstraint")) {
-                final PsiAnnotationParameterList annotationParameterList = annotation.getParameterList();
-                final PsiNameValuePair[] attributes = annotationParameterList.getAttributes();
-                for (final PsiNameValuePair attribute : attributes) {
-                    if (attribute.getLiteralValue() != null && !attribute.getLiteralValue().equals("false")) {
-                        builderConstraints.add(attribute);
-                    }
+        final List<PsiAnnotation> builderConstraintAnnotations = AnnotationUtility.getBuilderConstraintAnnotations(field);
+        for (final PsiAnnotation annotation : builderConstraintAnnotations) {
+            final PsiAnnotationParameterList annotationParameterList = annotation.getParameterList();
+            final PsiNameValuePair[] attributes = annotationParameterList.getAttributes();
+            for (final PsiNameValuePair attribute : attributes) {
+                if (attribute.getLiteralValue() != null && !attribute.getLiteralValue().equals("false")) {
+                    builderConstraints.add(attribute);
                 }
             }
         }

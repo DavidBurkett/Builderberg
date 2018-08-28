@@ -18,7 +18,8 @@ public class TypeUtility {
             return true;
         }
 
-        if (getNonGenericType(type).equals(canonicalName)) {
+        final String nonGenericType = getNonGenericType(type);
+        if (nonGenericType != null && nonGenericType.equals(canonicalName)) {
             return true;
         }
 
@@ -31,7 +32,7 @@ public class TypeUtility {
         return false;
     }
 
-    private static String getNonGenericType(final PsiType type) {
+    public static String getNonGenericType(final PsiType type) {
         if (type instanceof PsiClassType) {
             PsiClassType pct = (PsiClassType) type;
             return pct.resolve().getQualifiedName();
@@ -40,12 +41,20 @@ public class TypeUtility {
         return type.getCanonicalText();
     }
 
-    public static boolean isMap(final PsiType type) {
-        return isOfType(type, "java.util.Map");
-    }
-
     public static boolean isCollection(final PsiType type) {
         return isOfType(type, "java.util.Collection");
+    }
+
+    public static boolean isList(final PsiType type) {
+        return isOfType(type, "java.util.List");
+    }
+
+    public static boolean isSet(final PsiType type) {
+        return isOfType(type, "java.util.Set");
+    }
+
+    public static boolean isMap(final PsiType type) {
+        return isOfType(type, "java.util.Map");
     }
 
     public static boolean isString(final PsiType type, final PsiElement context) {

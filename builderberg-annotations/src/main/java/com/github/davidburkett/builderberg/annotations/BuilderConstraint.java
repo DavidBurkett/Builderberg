@@ -5,6 +5,10 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+/**
+ * Validation logic will be applied to fields annotated with this.
+ * @since 1.0.0
+ */
 @Target({ElementType.FIELD})
 @Retention(RetentionPolicy.SOURCE)
 public @interface BuilderConstraint {
@@ -14,7 +18,6 @@ public @interface BuilderConstraint {
 
     boolean noNullKeys() default false;
     boolean noNullValues() default false;
-    // TODO: NoNegativeValues()?
 
     boolean notNegative() default false;
     boolean notPositive() default false;
@@ -24,5 +27,6 @@ public @interface BuilderConstraint {
     double minValue() default 0.0;
     double maxValue() default 0.0;
 
+    @Deprecated
     String customValidation() default "";
 }

@@ -39,9 +39,9 @@ public class BuilderClassGenerator {
         generateFields(builderClass, fields);
         generateConstructor(builderClass);
         generateCreateMethod(builderClass);
-        generateWithSetters(builderClass, fields);
+        generateWithSetters(topLevelClass, builderClass, fields);
         generateBuildMethod(topLevelClass, builderClass);
-        generateValidateMethod(builderClass, fields);
+        generateValidateMethod(topLevelClass, builderClass, fields);
 
         return builderClass;
     }
@@ -77,7 +77,7 @@ public class BuilderClassGenerator {
         }
     }
 
-    private void generateWithSetters(final PsiClass builderClass, final List<PsiField> fields) {
+    private void generateWithSetters(final PsiClass topLevelClass, final PsiClass builderClass, final List<PsiField> fields) {
         final PsiType builderType = TypeUtils.getType(builderClass);
 
         for (final PsiField field : fields) {
@@ -99,7 +99,7 @@ public class BuilderClassGenerator {
 
             // Validate input
             final ValidationGenerator validationGenerator = new ValidationGenerator(project, psiElementFactory);
-            final List<PsiStatement> validationStatments = validationGenerator.generateValidationForField(withMethod, field);
+            final List<PsiStatement> validationStatments = validationGenerator.generateValidationForField(topLevelClass, withMethod, field);
             for (final PsiStatement validationStatement : validationStatments) {
                 body.add(validationStatement);
             }
@@ -162,7 +162,7 @@ public class BuilderClassGenerator {
         builderClass.add(constructor);
     }
 
-    private void generateValidateMethod(final PsiClass builderClass, final List<PsiField> fields) {
+    private void generateValidateMethod(final PsiClass topLevelClass, final PsiClass builderClass, final List<PsiField> fields) {
         final ValidationGenerator validationGenerator = new ValidationGenerator(project, psiElementFactory);
 
         final PsiMethod validateMethod = psiElementFactory.createMethod("validate", PsiType.VOID);
@@ -172,7 +172,7 @@ public class BuilderClassGenerator {
 
         for (PsiField field : fields) {
             // Validate input
-            final List<PsiStatement> validationStatments = validationGenerator.generateValidationForField(validateMethod, field);
+            final List<PsiStatement> validationStatments = validationGenerator.generateValidationForField(topLevelClass, validateMethod, field);
             for (final PsiStatement validationStatement : validationStatments) {
                 body.add(validationStatement);
             }

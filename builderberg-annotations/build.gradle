@@ -5,7 +5,7 @@ apply plugin: 'signing'
 
 group = 'com.github.davidburkett'
 archivesBaseName = 'builderberg-annotations'
-version = '1.0.1'
+version = '1.1.1'
 ext.packaging = 'jar'
 
 
@@ -60,7 +60,7 @@ uploadArchives {
                 packaging 'jar'
                 description 'Generates an inner builder class to assist with backward-compatibility for immutable classes.\n' +
                         'See Item 2 of "Effective Java" by Joshua Bloch'
-                url 'http://davidburkett.github.com/builderberg'
+                url 'http://github.com/DavidBurkett/builderberg'
 
                 scm {
                     url 'scm:git@github.com:DavidBurkett/Builderberg.git'

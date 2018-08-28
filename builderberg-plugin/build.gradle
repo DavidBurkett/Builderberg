@@ -15,7 +15,7 @@ apply plugin: 'signing'
 
 group = 'com.github.davidburkett'
 archivesBaseName = 'builderberg-plugin'
-version = '1.0.3'
+version = '1.1.0'
 ext.packaging = 'jar'
 
 
@@ -39,58 +39,6 @@ artifacts {
     archives sourcesJar
 }
 
-//********* artifact signing *********
-signing {
-    sign configurations.archives
-}
-
-
-uploadArchives {
-    repositories {
-        mavenDeployer {
-            beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
-
-            repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
-                authentication(userName: sonatypeUsername, password: sonatypePassword)
-            }
-
-            snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots/") {
-                authentication(userName: sonatypeUsername, password: sonatypePassword)
-            }
-
-            pom.project {
-                name 'builderberg-plugin'
-                packaging 'jar'
-                description 'Generates an inner builder class to assist with backward-compatibility for immutable classes.\n' +
-                        'See Item 2 of "Effective Java" by Joshua Bloch'
-                url 'http://davidburkett.github.com/builderberg'
-
-                scm {
-                    url 'scm:git@github.com:DavidBurkett/Builderberg.git'
-                    connection 'scm:git@github.com:DavidBurkett/Builderberg.git'
-                    developerConnection 'scm:git@github.com:DavidBurkett/Builderberg.git'
-                }
-
-                licenses {
-                    license {
-                        name 'The Apache Software License, Version 2.0'
-                        url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
-                        distribution 'repo'
-                    }
-                }
-
-                developers {
-                    developer {
-                        id 'burkett38'
-                        name 'David Burkett'
-                        email 'davidburkett38@gmail.com'
-                    }
-                }
-            }
-        }
-    }
-}
-
 dependencies {
     compile project(':builderberg-annotations')
     compile group: 'commons-lang', name: 'commons-lang', version: '2.6'
@@ -106,5 +54,8 @@ intellij {
 }
 patchPluginXml {
     changeNotes """
-      Initial Release"""
+    - Implemented support for the latest builderberg annotations.
+    - BuilderOptions: deserializable, minimumPluginVersion, generateAllArgsConstructor, etc.
+    - CustomLogic: Any methods or inner-classes annotated with @CustomLogic will be preserved during builder generation.
+    """
 }

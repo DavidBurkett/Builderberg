@@ -1,6 +1,10 @@
 package com.github.davidburkett.builderberg;
 
+import com.github.davidburkett.builderberg.enums.CollectionType;
 import com.github.davidburkett.builderberg.generators.*;
+import com.github.davidburkett.builderberg.utilities.AnnotationUtility;
+import com.github.davidburkett.builderberg.utilities.BuilderOptionUtility;
+import com.github.davidburkett.builderberg.utilities.CollectionTypeFactory;
 import com.github.davidburkett.builderberg.utilities.TypeUtility;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.*;
@@ -11,6 +15,7 @@ import com.siyeh.ig.psiutils.TypeUtils;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Asynchronous handler responsible for making the changes to an existing class to provide it a builder and all supporting functionality.
@@ -23,6 +28,8 @@ public class BuilderbergRunnable implements Runnable {
     private final HashCodeGenerator hashCodeGenerator;
     private final EqualsGenerator equalsGenerator;
     private final BuilderClassGenerator builderClassGenerator;
+    private final AllArgsConstructorGenerator allArgsConstructorGenerator;
+    private final CloneGenerator cloneGenerator;
 
     public static BuilderbergRunnable create(final Project project, final PsiClass topLevelClass) {
         final PsiElementFactory psiElementFactory = PsiElementFactory.SERVICE.getInstance(project);
@@ -30,14 +37,17 @@ public class BuilderbergRunnable implements Runnable {
         final HashCodeGenerator hashCodeGenerator = new HashCodeGenerator(psiElementFactory);
         final EqualsGenerator equalsGenerator = new EqualsGenerator(project, psiElementFactory);
         final BuilderClassGenerator builderClassGenerator = new BuilderClassGenerator(project, psiElementFactory);
+        final AllArgsConstructorGenerator allArgsConstructorGenerator = new AllArgsConstructorGenerator(project);
+        final CloneGenerator cloneGenerator = new CloneGenerator(project);
 
         return new BuilderbergRunnable(project, psiElementFactory, topLevelClass, toStringGenerator, hashCodeGenerator,
-                equalsGenerator, builderClassGenerator);
+                equalsGenerator, builderClassGenerator, allArgsConstructorGenerator, cloneGenerator);
     }
 
     private BuilderbergRunnable(final Project project, final PsiElementFactory psiElementFactory, final PsiClass topLevelClass,
-            final ToStringGenerator toStringGenerator, final HashCodeGenerator hashCodeGenerator,
-            final EqualsGenerator equalsGenerator, final BuilderClassGenerator builderClassGenerator) {
+                                final ToStringGenerator toStringGenerator, final HashCodeGenerator hashCodeGenerator,
+                                final EqualsGenerator equalsGenerator, final BuilderClassGenerator builderClassGenerator,
+                                final AllArgsConstructorGenerator allArgsConstructorGenerator, final CloneGenerator cloneGenerator) {
         this.project = project;
         this.psiElementFactory = psiElementFactory;
         this.topLevelClass = topLevelClass;
@@ -45,6 +55,8 @@ public class BuilderbergRunnable implements Runnable {
         this.hashCodeGenerator = hashCodeGenerator;
         this.equalsGenerator = equalsGenerator;
         this.builderClassGenerator = builderClassGenerator;
+        this.allArgsConstructorGenerator = allArgsConstructorGenerator;
+        this.cloneGenerator = cloneGenerator;
     }
 
     @Override
@@ -55,15 +67,49 @@ public class BuilderbergRunnable implements Runnable {
         // Create the inner-builder class
         final PsiClass builderClass = builderClassGenerator.createBuilderClass(topLevelClass);
 
+        final boolean jacksonSupport = BuilderOptionUtility.supportJacksonDeserialization(topLevelClass);
+
         generateBuilderMethod(builderClass);
         generateConstructor(builderClass);
+        if (jacksonSupport || BuilderOptionUtility.generateAllArgsConstructor(topLevelClass)) {
+            allArgsConstructorGenerator.generateAllArgsConstructor(topLevelClass, builderClass, jacksonSupport);
+        }
+
         generateGetters();
 
-        toStringGenerator.generateToStringMethod(topLevelClass);
-        hashCodeGenerator.generateHashCodeMethod(topLevelClass);
-        equalsGenerator.generateEqualsMethod(topLevelClass);
+        if (BuilderOptionUtility.generateToString(topLevelClass)) {
+            toStringGenerator.generateToStringMethod(topLevelClass);
+        }
 
-        // TODO: Generate clone or copy constructor
+        if (BuilderOptionUtility.generateHashCode(topLevelClass)) {
+            hashCodeGenerator.generateHashCodeMethod(topLevelClass);
+        }
+
+        if (BuilderOptionUtility.generateEquals(topLevelClass)) {
+            equalsGenerator.generateEqualsMethod(topLevelClass);
+        }
+
+        if (BuilderOptionUtility.generateClone(topLevelClass)) {
+            // Add implements Cloneable
+            final PsiClassType[] implementsClassTypes = topLevelClass.getImplementsList().getReferencedTypes();
+
+            boolean alreadyImplemented = false;
+            for (final PsiClassType implementsClassType : implementsClassTypes) {
+                if (implementsClassType.getClassName().equalsIgnoreCase("Cloneable")) {
+                    alreadyImplemented = true;
+                    break;
+                }
+            }
+
+            if (!alreadyImplemented) {
+                final PsiClassType type = (PsiClassType)psiElementFactory.createTypeFromText("java.lang.Cloneable", topLevelClass);
+                final PsiJavaCodeReferenceElement referenceElement = psiElementFactory.createReferenceElementByType(type);
+                topLevelClass.getImplementsList().add(referenceElement);
+            }
+
+            // Add clone() method
+            cloneGenerator.generateClone(topLevelClass);
+        }
 
         topLevelClass.add(builderClass);
 
@@ -75,13 +121,17 @@ public class BuilderbergRunnable implements Runnable {
         // Clean up previously-generated inner classes
         final PsiClass[] innerClasses = topLevelClass.getAllInnerClasses();
         for (final PsiClass innerClass : innerClasses) {
-            innerClass.delete();
+            if (!AnnotationUtility.hasCustomLogicAnnotation(innerClass)) {
+                innerClass.delete();
+            }
         }
 
         // Clean up previously-generated methods
         final PsiMethod[] methods = topLevelClass.getMethods();
         for (final PsiMethod method : methods) {
-            method.delete();
+            if (!AnnotationUtility.hasCustomLogicAnnotation(method)) {
+                method.delete();
+            }
         }
 
         // Make all fields final
@@ -117,20 +167,39 @@ public class BuilderbergRunnable implements Runnable {
         final PsiStatement validateStatement = psiElementFactory.createStatementFromText("builder.validate();", constructor);
         body.add(validateStatement);
 
+        final boolean makeCollectionsImmutable = BuilderOptionUtility.makeCollectionsImmutable(topLevelClass);
+
         // Assign values
         final List<PsiField> fields = Arrays.asList(topLevelClass.getFields());
         for (PsiField field : fields) {
             if (!field.hasModifierProperty(PsiModifier.STATIC)) {
-                final String fieldName = field.getName();
-
-                final String assignStatementText = String.format("this.%s = builder.%s;", fieldName, fieldName);
-                final PsiStatement assignStatement =
-                        psiElementFactory.createStatementFromText(assignStatementText, constructor);
-                body.add(assignStatement);
+                generateAssignStatement(constructor, field, makeCollectionsImmutable);
             }
         }
 
         topLevelClass.add(constructor);
+    }
+
+    private void generateAssignStatement(final PsiMethod constructor, final PsiField field, final boolean makeCollectionsImmutable) {
+        final String fieldName = field.getName();
+        final PsiType fieldType = field.getType();
+
+        if (makeCollectionsImmutable) {
+            final Optional<CollectionType> collectionTypeOptional = CollectionTypeFactory.getCollectionType(fieldType);
+            if (collectionTypeOptional.isPresent() && TypeUtility.getNonGenericType(fieldType).equalsIgnoreCase(collectionTypeOptional.get().getCanonicalName())) {
+                final String unmodifiableMethod = collectionTypeOptional.get().getUnmodifiableMethod();
+
+                addStatementToMethod(constructor, String.format("this.%s = %s(builder.%s);", fieldName, unmodifiableMethod, fieldName));
+                return;
+            }
+        }
+
+        addStatementToMethod(constructor, String.format("this.%s = builder.%s;", fieldName, fieldName));
+    }
+
+    private void addStatementToMethod(final PsiMethod method, final String statementText) {
+        final PsiStatement statement = psiElementFactory.createStatementFromText(statementText, method);
+        method.getBody().add(statement);
     }
 
     private void generateGetters() {
