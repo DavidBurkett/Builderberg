@@ -208,19 +208,28 @@ public class BuilderbergRunnable implements Runnable {
             final String fieldName = field.getName();
             final String capitalizedFieldName = fieldName.substring(0, 1).toUpperCase() + fieldName.substring(1);
             final String getterMethodName = String.format("get%s", capitalizedFieldName);
-            final PsiMethod getter = psiElementFactory.createMethod(getterMethodName, field.getType());
+            generateGetter(field, getterMethodName);
 
-            final PsiCodeBlock body = getter.getBody();
-            final String returnStatementText = String.format("return %s;", fieldName);
-            final PsiStatement returnStatement =
-                    psiElementFactory.createStatementFromText(returnStatementText, getter);
-            body.add(returnStatement);
-
-            final JavadocGenerator javadocGenerator = new JavadocGenerator(psiElementFactory);
-            javadocGenerator.generateCommentForGetterMethod(getter, field);
-
-            topLevelClass.add(getter);
+            if (TypeUtility.isPrimitiveBoolean(field.getType())) {
+                final String isMethodName = String.format("is%s", capitalizedFieldName);
+                generateGetter(field, isMethodName);
+            }
         }
+    }
+
+    private void generateGetter(final PsiField field, final String getterMethodName) {
+        final PsiMethod getter = psiElementFactory.createMethod(getterMethodName, field.getType());
+
+        final PsiCodeBlock body = getter.getBody();
+        final String returnStatementText = String.format("return %s;", field.getName());
+        final PsiStatement returnStatement =
+                psiElementFactory.createStatementFromText(returnStatementText, getter);
+        body.add(returnStatement);
+
+        final JavadocGenerator javadocGenerator = new JavadocGenerator(psiElementFactory);
+        javadocGenerator.generateCommentForGetterMethod(getter, field);
+
+        topLevelClass.add(getter);
     }
 
     private void formatGeneratedCode() {

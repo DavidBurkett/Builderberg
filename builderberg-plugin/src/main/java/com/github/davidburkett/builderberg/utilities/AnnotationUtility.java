@@ -14,6 +14,7 @@ public class AnnotationUtility {
     private static final String CUSTOM_LOGIC = "com.github.davidburkett.builderberg.annotations.CustomLogic";
     private static final String BUILDER_CONSTRAINT = "com.github.davidburkett.builderberg.annotations.BuilderConstraint";
     private static final String BUILDER_OPTIONS = "com.github.davidburkett.builderberg.annotations.BuilderOptions";
+    private static final String JSON_PROPERTY = "com.fasterxml.jackson.annotation.JsonProperty";
 
     public static boolean hasCustomLogicAnnotation(final PsiMethod method) {
         return hasCustomLogicAnnotation(method.getAnnotations());
@@ -48,6 +49,13 @@ public class AnnotationUtility {
         final PsiAnnotation[] annotations = psiClass.getAnnotations();
         return Arrays.stream(annotations)
                 .filter(a -> a.getQualifiedName().equals(BUILDER_OPTIONS))
+                .findFirst();
+    }
+
+    public static Optional<PsiAnnotation> getJsonPropertyAnnotation(final PsiField field) {
+        final PsiAnnotation[] annotations = field.getAnnotations();
+        return Arrays.stream(annotations)
+                .filter(a -> a.getQualifiedName().equals(JSON_PROPERTY))
                 .findFirst();
     }
 }

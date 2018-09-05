@@ -72,7 +72,7 @@ public class HashCodeGenerator {
                 return "(int) (" + doubleToLong + " ^ (" + doubleToLong + " >>> 32))";
             }
         } else {
-            return fieldName + ".hashCode()";
+            return "java.util.Objects.hashCode(" + fieldName + ")";
         }
 
         return "0";

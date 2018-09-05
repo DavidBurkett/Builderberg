@@ -1,15 +1,14 @@
 package com.github.davidburkett.builderberg.generators;
 
 import com.github.davidburkett.builderberg.utilities.ClassFactory;
+import com.github.davidburkett.builderberg.utilities.QualifyingFieldsFinder;
 import com.github.davidburkett.builderberg.utilities.TypeUtility;
 import com.google.common.collect.ImmutableList;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.*;
 import com.intellij.psi.util.PsiUtil;
 import com.siyeh.ig.psiutils.TypeUtils;
-import org.fest.util.Lists;
 
-import java.util.Arrays;
 import java.util.List;
 
 public class BuilderClassGenerator {
@@ -34,7 +33,7 @@ public class BuilderClassGenerator {
         final PsiClass builderClass =
                 classFactory.createClass(BUILDER_CLASS, topLevelClass.getTypeParameters(), ImmutableList.of(PsiModifier.PUBLIC, PsiModifier.STATIC, PsiModifier.FINAL));
 
-        final List<PsiField> fields = getQualifyingFields(topLevelClass);
+        final List<PsiField> fields = QualifyingFieldsFinder.findQualifyingFields(topLevelClass);
 
         generateFields(builderClass, fields);
         generateConstructor(builderClass);
@@ -44,30 +43,6 @@ public class BuilderClassGenerator {
         generateValidateMethod(topLevelClass, builderClass, fields);
 
         return builderClass;
-    }
-
-    private List<PsiField> getQualifyingFields(final PsiClass topLevelClass) {
-        final List<PsiField> qualifyingFields = Lists.newArrayList();
-
-        final List<PsiField> fields = Arrays.asList(topLevelClass.getFields());
-        for (final PsiField field : fields) {
-
-            // Skip final fields that are already initialized.
-            if (field.hasModifierProperty(PsiModifier.FINAL)) {
-                if (field.getInitializer() != null) {
-                    continue;
-                }
-            }
-
-            // Skip static fields.
-            if (field.hasModifierProperty(PsiModifier.STATIC)) {
-                continue;
-            }
-
-            qualifyingFields.add(field);
-        }
-
-        return qualifyingFields;
     }
 
     private void generateFields(final PsiClass builderClass, final List<PsiField> fields) {

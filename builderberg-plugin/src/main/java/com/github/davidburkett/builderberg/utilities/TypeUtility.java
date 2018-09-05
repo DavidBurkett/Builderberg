@@ -61,6 +61,10 @@ public class TypeUtility {
         return type.equals(TypeUtils.getStringType(context));
     }
 
+    public static boolean isPrimitiveBoolean(final PsiType type) {
+        return type == PsiType.BOOLEAN;
+    }
+
     /**
      * Determines the type of the values in the given array or collection {@link PsiType}.
      * @param type The {@link PsiType} of the array or collection.
