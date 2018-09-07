@@ -1,10 +1,13 @@
 package com.github.davidburkett.builderberg.utilities;
 
+import com.intellij.openapi.project.Project;
 import com.intellij.psi.*;
+import com.intellij.psi.search.GlobalSearchScope;
 import com.siyeh.ig.psiutils.TypeUtils;
 import org.fest.util.Maps;
 
 import java.util.Map;
+import java.util.Optional;
 
 public class TypeUtility {
     /**
@@ -65,6 +68,33 @@ public class TypeUtility {
         return type == PsiType.BOOLEAN;
     }
 
+    public static boolean isNumeric(final PsiType type) {
+        final PsiType unboxedType = unboxIfPossible(type);
+        if (unboxedType instanceof PsiPrimitiveType) {
+            if (unboxedType != PsiType.BOOLEAN) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static PsiType unboxIfPossible(final PsiType type) {
+        final Map<String, PsiType> unboxedTypesByBoxedName = Maps.newHashMap();
+        unboxedTypesByBoxedName.put(CommonClassNames.JAVA_LANG_BOOLEAN, PsiType.BOOLEAN);
+        unboxedTypesByBoxedName.put(CommonClassNames.JAVA_LANG_BYTE, PsiType.BYTE);
+        unboxedTypesByBoxedName.put(CommonClassNames.JAVA_LANG_SHORT, PsiType.SHORT);
+        unboxedTypesByBoxedName.put(CommonClassNames.JAVA_LANG_INTEGER, PsiType.INT);
+        unboxedTypesByBoxedName.put(CommonClassNames.JAVA_LANG_LONG, PsiType.LONG);
+        unboxedTypesByBoxedName.put(CommonClassNames.JAVA_LANG_FLOAT, PsiType.FLOAT);
+        unboxedTypesByBoxedName.put(CommonClassNames.JAVA_LANG_DOUBLE, PsiType.DOUBLE);
+        unboxedTypesByBoxedName.put(CommonClassNames.JAVA_LANG_CHARACTER, PsiType.CHAR);
+
+        final Optional<String> boxedPrimitive = unboxedTypesByBoxedName.keySet().stream().filter(boxed -> isOfType(type, boxed)).findFirst();
+
+        return boxedPrimitive.map(name -> unboxedTypesByBoxedName.get(name)).orElse(type);
+    }
+
     /**
      * Determines the type of the values in the given array or collection {@link PsiType}.
      * @param type The {@link PsiType} of the array or collection.
@@ -117,5 +147,9 @@ public class TypeUtility {
         } else {
             return factory.createType(psiClass);
         }
+    }
+
+    public static PsiType getJavaLangObject(final Project project) {
+        return PsiType.getJavaLangObject(PsiManager.getInstance(project), GlobalSearchScope.allScope(project));
     }
 }

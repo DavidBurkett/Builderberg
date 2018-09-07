@@ -15,7 +15,7 @@ import com.intellij.psi.PsiClass;
  */
 public class BuilderbergAction extends AnAction {
     public BuilderbergAction() {
-        super("InnerBuilderBuilder");
+        super("Builderberg");
     }
 
     /**
@@ -28,11 +28,11 @@ public class BuilderbergAction extends AnAction {
             final PsiClass topLevelClass = TopLevelClassFinder.findTopLevelClass(project, event);
             if (topLevelClass != null) {
                 if (VersionUtility.doesMeetMinimumVersion(topLevelClass)) {
-                    final Runnable builderGenerator = BuilderbergRunnable.create(project, topLevelClass);
+                    final Runnable builderGenerator = new BuilderbergRunnable(project, topLevelClass);
                     WriteCommandAction.runWriteCommandAction(project, builderGenerator);
                 } else {
-                    final AlertDialog alertDialog = new AlertDialog(project);
-                    alertDialog.show();
+                    final VersionAlertDialog versionAlertDialog = new VersionAlertDialog(project);
+                    versionAlertDialog.show();
                 }
             }
         }
