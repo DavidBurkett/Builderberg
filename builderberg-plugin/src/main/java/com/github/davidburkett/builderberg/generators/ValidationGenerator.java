@@ -29,7 +29,6 @@ public class ValidationGenerator {
      * NOTE: This generates the validation statements, but does not add them to the method.
      * @param method The {@link PsiMethod} the validation logic will be added to.
      * @param field The {@link PsiField} to validate.
-     * @return The {@link List} of generated validation {@link PsiStatement}s.
      */
     public void generateValidationForField(final PsiClass topLevelClass, final PsiMethod method, final PsiField field) throws InvalidConstraintException {
         final List<PsiStatement> validationStatements = Lists.newArrayList();
