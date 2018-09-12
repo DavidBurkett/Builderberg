@@ -35,10 +35,10 @@ This will generate the inner builder class, all of the getters, constructors, se
 * final ClassName immutableObject = ClassName.builder().withField1(field1Value).withField2(field2Value).build();
 
 ##### Builder Constraints
-For instructions on using field constraints, see 'docs/BuilderConstraints.md'
+For instructions on using field constraints, see '[docs/BuilderConstraints.md]'
 
 ##### Builder Options
-For advanced builder options, see 'docs/BuilderOptions.md'
+For advanced builder options, see '[docs/BuilderOptions.md]'
 
 ### Example
 
@@ -190,3 +190,6 @@ public class ExampleObject {
 ```
  ##### Usage:
  `final ExampleObject instance = ExampleObject.builder().withField1(7).withField2("SomeString").build();`
+ 
+ [docs/BuilderConstraints.md]: https://github.com/DavidBurkett/Builderberg/blob/master/docs/BuilderConstraints.md
+ [docs/BuilderOptions.md]: https://github.com/DavidBurkett/Builderberg/blob/master/docs/BuilderOptions.md
