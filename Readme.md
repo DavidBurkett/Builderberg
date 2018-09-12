@@ -1,4 +1,4 @@
-## Builderberg - Inner Builder Generator
+# Builderberg - Inner Builder Generator
 
 Generates an inner builder for plain old data classes using a builder pattern similar to the one proposed by Joshua Bloch in "Effective Java"[1]. 
 Using this builder turns a field-only class into an immutable class that can only be constructed by using the generated inner builder.
@@ -13,7 +13,7 @@ In addition to providing immutable objects, Builderberg also provides:
 
 [1] http://thefinestartist.com/effective-java/02
 
-### Installation Instructions
+## Installation Instructions
 ##### Plugin
 From IntelliJ IDEA, go to preferences > plugins.
 Click the "Browse Repositories" button.
@@ -24,7 +24,7 @@ If you're looking to leverage the power of BuilderConstraints (notNull, notEmpty
 Using gradle:
 * compile group: 'com.github.davidburkett', name: 'builderberg-annotations', version: '1.1.1'
 
-### Usage
+## Usage
 
 ##### Basic Usage
 To use the builder with no advanced features:
@@ -40,7 +40,7 @@ For instructions on using field constraints, see '[docs/BuilderConstraints.md]'
 ##### Builder Options
 For advanced builder options, see '[docs/BuilderOptions.md]'
 
-### Example
+## Example
 
 ##### Before
 ```

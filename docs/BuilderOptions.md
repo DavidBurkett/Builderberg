@@ -1,7 +1,7 @@
-## Builder Options
+# Builder Options
 Builderberg provides users the ability specify custom options per class that will be used when generating inner builders.
 
-### Usage
+## Usage
 To specify builderberg options for a class, you need to simply annotate the class with the [BuilderOptions] annotation.
 [BuilderOptions] will be available on any project configured to include builderberg-annotations:
 
@@ -17,7 +17,7 @@ public class ExampleBuilderbergObject {
 }
 ```
 
-### Available Options
+## Available Options
 NOTE: You should refer to the [BuilderOptions] implementation of the version you're using for the most accurate list.
 
     deserializable:

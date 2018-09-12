@@ -1,8 +1,8 @@
-## Builder Constraints
+# Builder Constraints
 Builderberg provides users the ability specify field constraints that will be validated when an object is being built.
 This will guarantee that the values of the fields on built objects will meet the specified constraints.
 
-### Usage
+## Usage
 To specify a constraint for a field, you need to simply annotate the field with the [BuilderConstraint] annotation.
 BuilderConstraint will be available on any project configured to include builderberg-annotations:
 
@@ -18,7 +18,7 @@ public class ExampleBuilderbergObject {
 }
 ```
 
-### Available Constraints
+## Available Constraints
 NOTE: You should refer to the [BuilderConstraint] implementation of the version you're using for the most accurate list.
 
     notNull:
