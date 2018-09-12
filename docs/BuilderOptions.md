@@ -60,7 +60,7 @@ NOTE: You should refer to the [BuilderOptions] implementation of the version you
         ACCEPTABLE VALUES: true, false
         
     generateClone:
-        DESCRIPTION: Indicates whether a clone method should be generated for the object.
+        DESCRIPTION: Indicates whether a clone method should be generated for the object. Generated clones create a shallow copy.
         USAGE: @BuilderOptions(generateClone = true)
         DEFAULT BEHAVIOR: If unspecified, a clone method WILL NOT be generated.
         ACCEPTABLE VALUES: true, false
