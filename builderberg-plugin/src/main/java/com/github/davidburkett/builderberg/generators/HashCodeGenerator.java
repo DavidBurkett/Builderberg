@@ -1,14 +1,18 @@
 package com.github.davidburkett.builderberg.generators;
 
+import com.github.davidburkett.builderberg.utilities.AnnotationUtility;
+import com.github.davidburkett.builderberg.utilities.MethodUtility;
 import com.intellij.psi.*;
 
 public class HashCodeGenerator {
     private final PsiElementFactory psiElementFactory;
     private final JavadocGenerator javadocGenerator;
+    private final MethodUtility methodUtility;
 
     public HashCodeGenerator(final PsiElementFactory psiElementFactory) {
         this.psiElementFactory = psiElementFactory;
         this.javadocGenerator = new JavadocGenerator(psiElementFactory);
+        this.methodUtility = new MethodUtility(psiElementFactory);
     }
 
     /**
@@ -17,40 +21,33 @@ public class HashCodeGenerator {
      */
     public void generateHashCodeMethod(final PsiClass topLevelClass) {
         // Create hashCode method
-        final PsiMethod hashCodeMethod =
-                psiElementFactory.createMethod("hashCode", PsiType.INT);
+        final PsiMethod hashCodeMethod = methodUtility.createPublicMethod("hashCode", PsiType.INT);
 
         // Generate inheritDoc javadoc
         javadocGenerator.generateInheritDocJavadocForMethod(hashCodeMethod);
 
+        // Add @Generated annotation
+        AnnotationUtility.addGeneratedAnnotation(psiElementFactory, hashCodeMethod);
+
         // Add @Override annotation
-        hashCodeMethod.getModifierList().addAnnotation("Override");
+        AnnotationUtility.addOverrideAnnotation(hashCodeMethod);
+
+        methodUtility.addStatement(hashCodeMethod, "int result = 17;");
+
+        createFieldStatements(topLevelClass, hashCodeMethod);
 
         // Add return statement
-        final PsiCodeBlock methodBody = hashCodeMethod.getBody();
-
-        final PsiStatement resultInitializationStatement =
-                psiElementFactory.createStatementFromText("int result = 17;", hashCodeMethod);
-        methodBody.add(resultInitializationStatement);
-
-        createFieldStatements(topLevelClass, hashCodeMethod, methodBody);
-
-        final String returnString = "return result;";
-        final PsiStatement returnStatement =
-                psiElementFactory.createStatementFromText(returnString, hashCodeMethod);
-        methodBody.add(returnStatement);
+        methodUtility.addReturnStatement(hashCodeMethod, "result");
 
         topLevelClass.add(hashCodeMethod);
     }
 
-    private void createFieldStatements(final PsiClass topLevelClass, final PsiMethod hashCodeMethod, final PsiCodeBlock methodBody) {
+    private void createFieldStatements(final PsiClass topLevelClass, final PsiMethod hashCodeMethod) {
         final PsiField[] fields = topLevelClass.getFields();
         for (final PsiField field : fields) {
             final String fieldValue = getValueForField(field);
             final String statement = "result = 31 * result + " + fieldValue + ";";
-
-            final PsiStatement fieldStatement = psiElementFactory.createStatementFromText(statement, hashCodeMethod);
-            methodBody.add(fieldStatement);
+            methodUtility.addStatement(hashCodeMethod, statement);
         }
     }
 

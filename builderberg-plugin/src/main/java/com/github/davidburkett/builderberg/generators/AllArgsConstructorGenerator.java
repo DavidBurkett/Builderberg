@@ -21,6 +21,8 @@ public class AllArgsConstructorGenerator {
 
     public void generateAllArgsConstructor(final PsiClass topLevelClass, final PsiClass builderClass, final boolean jacksonSupport) {
         final PsiMethod constructor = psiElementFactory.createConstructor();
+        AnnotationUtility.addGeneratedAnnotation(psiElementFactory, constructor);
+
         if (jacksonSupport) {
             constructor.getModifierList().addAnnotation(JSON_CREATOR);
         }

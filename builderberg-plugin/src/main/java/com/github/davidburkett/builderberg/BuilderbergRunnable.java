@@ -19,6 +19,7 @@ import java.util.Optional;
 public class BuilderbergRunnable implements Runnable {
     private final Project project;
     private final PsiClass topLevelClass;
+    private final PsiElementFactory psiElementFactory;
     private final ToStringGenerator toStringGenerator;
     private final HashCodeGenerator hashCodeGenerator;
     private final EqualsGenerator equalsGenerator;
@@ -29,10 +30,9 @@ public class BuilderbergRunnable implements Runnable {
     private final JavadocGenerator javadocGenerator;
 
     public BuilderbergRunnable(final Project project, final PsiClass topLevelClass) {
-        final PsiElementFactory psiElementFactory = PsiElementFactory.SERVICE.getInstance(project);
-
         this.project = project;
         this.topLevelClass = topLevelClass;
+        this.psiElementFactory = PsiElementFactory.SERVICE.getInstance(project);
         this.toStringGenerator = new ToStringGenerator(psiElementFactory);
         this.hashCodeGenerator = new HashCodeGenerator(psiElementFactory);
         this.equalsGenerator = new EqualsGenerator(project, psiElementFactory);
@@ -114,6 +114,8 @@ public class BuilderbergRunnable implements Runnable {
 
     private void generateBuilderMethod(final PsiClass builderClass) {
         final PsiMethod builderMethod = methodUtility.createPublicStaticMethod("builder", TypeUtils.getType(builderClass));
+        AnnotationUtility.addGeneratedAnnotation(psiElementFactory, builderMethod);
+        
         methodUtility.addStatement(builderMethod, "return new Builder();");
 
         topLevelClass.add(builderMethod);
@@ -121,6 +123,7 @@ public class BuilderbergRunnable implements Runnable {
 
     private void generateConstructor(final PsiClass builderClass) {
         final PsiMethod constructor = methodUtility.createPrivateConstructor();
+        AnnotationUtility.addGeneratedAnnotation(psiElementFactory, constructor);
 
         final PsiType builderType = TypeUtility.getTypeWithGenerics(builderClass, builderClass.getTypeParameters());
         methodUtility.addParameter(constructor, "builder", builderType);
@@ -178,6 +181,7 @@ public class BuilderbergRunnable implements Runnable {
 
         final String returnStatementText = String.format("return %s;", field.getName());
         methodUtility.addStatement(getter, returnStatementText);
+        AnnotationUtility.addGeneratedAnnotation(psiElementFactory, getter);
 
         topLevelClass.add(getter);
     }

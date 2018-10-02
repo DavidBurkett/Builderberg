@@ -86,10 +86,6 @@ public class MethodUtility {
         method.getThrowsList().add(referenceElement);
     }
 
-    public void addOverrideAnnotation(final PsiMethod method) {
-        method.getModifierList().addAnnotation("Override");
-    }
-
     public void addJavadoc(final PsiMethod method, final List<String> javadocLines) {
         final StringBuilder javadocBuilder = new StringBuilder("/**\n");
         javadocLines.stream().forEach(line -> javadocBuilder.append("\n * " + line));

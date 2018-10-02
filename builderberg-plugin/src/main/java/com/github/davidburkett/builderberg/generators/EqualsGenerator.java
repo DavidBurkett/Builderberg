@@ -1,5 +1,6 @@
 package com.github.davidburkett.builderberg.generators;
 
+import com.github.davidburkett.builderberg.utilities.AnnotationUtility;
 import com.github.davidburkett.builderberg.utilities.MethodUtility;
 import com.github.davidburkett.builderberg.utilities.TypeUtility;
 import com.intellij.openapi.project.Project;
@@ -8,11 +9,13 @@ import com.siyeh.ig.psiutils.TypeUtils;
 
 public class EqualsGenerator {
     private final Project project;
+    private final PsiElementFactory psiElementFactory;
     private final JavadocGenerator javadocGenerator;
     private final MethodUtility methodUtility;
 
     public EqualsGenerator(final Project project, final PsiElementFactory psiElementFactory) {
         this.project = project;
+        this.psiElementFactory = psiElementFactory;
         this.javadocGenerator = new JavadocGenerator(psiElementFactory);
         this.methodUtility = new MethodUtility(psiElementFactory);
     }
@@ -31,8 +34,11 @@ public class EqualsGenerator {
         // Generate inheritDoc javadoc
         javadocGenerator.generateInheritDocJavadocForMethod(equalsMethod);
 
+        // Add @Generated annotation
+        AnnotationUtility.addGeneratedAnnotation(psiElementFactory, equalsMethod);
+
         // Add @Override annotation
-        methodUtility.addOverrideAnnotation(equalsMethod);
+        AnnotationUtility.addOverrideAnnotation(equalsMethod);
 
         // Add trivial comparison statement
         methodUtility.addIfStatement(equalsMethod, "this == o", "return true;");

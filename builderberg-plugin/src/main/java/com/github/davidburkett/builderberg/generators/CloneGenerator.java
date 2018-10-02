@@ -1,5 +1,6 @@
 package com.github.davidburkett.builderberg.generators;
 
+import com.github.davidburkett.builderberg.utilities.AnnotationUtility;
 import com.github.davidburkett.builderberg.utilities.MethodUtility;
 import com.github.davidburkett.builderberg.utilities.TypeUtility;
 import com.intellij.openapi.project.Project;
@@ -31,8 +32,11 @@ public class CloneGenerator {
         // Generate inheritDoc javadoc
         javadocGenerator.generateInheritDocJavadocForMethod(cloneMethod);
 
+        // Add @Generated annotation
+        AnnotationUtility.addGeneratedAnnotation(psiElementFactory, cloneMethod);
+
         // Add @Override annotation
-        methodUtility.addOverrideAnnotation(cloneMethod);
+        AnnotationUtility.addOverrideAnnotation(cloneMethod);
 
         // Add trivial comparison statement
         methodUtility.addReturnStatement(cloneMethod, "super.clone()");

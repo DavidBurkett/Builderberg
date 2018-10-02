@@ -25,6 +25,8 @@ public class ClassFactory {
             PsiUtil.setModifierProperty(createdClass, modifier, true);
         }
 
+        AnnotationUtility.addGeneratedAnnotation(psiElementFactory, createdClass);
+
         return createdClass;
     }
 }

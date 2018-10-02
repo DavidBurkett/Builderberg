@@ -1,5 +1,7 @@
 package com.github.davidburkett.builderberg.generators;
 
+import com.github.davidburkett.builderberg.utilities.AnnotationUtility;
+import com.github.davidburkett.builderberg.utilities.MethodUtility;
 import com.github.davidburkett.builderberg.utilities.TypeUtility;
 import com.intellij.psi.*;
 import com.siyeh.ig.psiutils.TypeUtils;
@@ -10,22 +12,26 @@ public class ToStringGenerator {
 
     private final PsiElementFactory psiElementFactory;
     private final JavadocGenerator javadocGenerator;
+    private final MethodUtility methodUtility;
 
     public ToStringGenerator(final PsiElementFactory psiElementFactory) {
         this.psiElementFactory = psiElementFactory;
         this.javadocGenerator = new JavadocGenerator(psiElementFactory);
+        this.methodUtility = new MethodUtility(psiElementFactory);
     }
 
     public void generateToStringMethod(final PsiClass topLevelClass) {
         // Create toString method
-        final PsiMethod toStringMethod =
-                psiElementFactory.createMethod("toString", TypeUtils.getStringType(topLevelClass));
+        final PsiMethod toStringMethod = methodUtility.createPublicMethod("toString", TypeUtils.getStringType(topLevelClass));
 
         // Generate inheritDoc javadoc
         javadocGenerator.generateInheritDocJavadocForMethod(toStringMethod);
 
+        // Add @Generated annotation
+        AnnotationUtility.addGeneratedAnnotation(psiElementFactory, toStringMethod);
+
         // Add @Override annotation
-        toStringMethod.getModifierList().addAnnotation("Override");
+        AnnotationUtility.addOverrideAnnotation(toStringMethod);
 
         addSerializedValues(topLevelClass, toStringMethod);
 
