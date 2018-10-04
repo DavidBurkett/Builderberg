@@ -53,11 +53,12 @@ public class BuilderbergRunnable implements Runnable {
             final PsiClass builderClass = builderClassGenerator.createBuilderClass(topLevelClass);
 
             generateBuilderMethod(builderClass);
+            generateBuilderFromExistingObjectMethod(builderClass);
             generateConstructor(builderClass);
 
             final boolean jacksonSupport = BuilderOptionUtility.supportJacksonDeserialization(topLevelClass);
             if (jacksonSupport || BuilderOptionUtility.generateAllArgsConstructor(topLevelClass)) {
-                allArgsConstructorGenerator.generateAllArgsConstructor(topLevelClass, builderClass, jacksonSupport);
+                allArgsConstructorGenerator.generateAllArgsConstructor(topLevelClass, jacksonSupport);
             }
 
             generateGetters();
@@ -115,8 +116,27 @@ public class BuilderbergRunnable implements Runnable {
     private void generateBuilderMethod(final PsiClass builderClass) {
         final PsiMethod builderMethod = methodUtility.createPublicStaticMethod("builder", TypeUtils.getType(builderClass));
         AnnotationUtility.addGeneratedAnnotation(psiElementFactory, builderMethod);
-        
+
         methodUtility.addStatement(builderMethod, "return new Builder();");
+
+        topLevelClass.add(builderMethod);
+    }
+
+    private void generateBuilderFromExistingObjectMethod(final PsiClass builderClass) {
+        final PsiMethod builderMethod = methodUtility.createPublicStaticMethod("builder", TypeUtils.getType(builderClass));
+        methodUtility.addParameter(builderMethod, "instance", TypeUtils.getType(topLevelClass));
+
+        methodUtility.addStatement(builderMethod, "final Builder builder = new Builder();");
+
+        final List<PsiField> fields = QualifyingFieldsFinder.findQualifyingFields(topLevelClass);
+        for (final PsiField field : fields) {
+            final String fieldName = field.getName();
+            final String capitalizedFieldName = fieldName.substring(0, 1).toUpperCase() + fieldName.substring(1);
+
+            methodUtility.addStatement(builderMethod, String.format("builder.with%s(instance.get%s());", capitalizedFieldName, capitalizedFieldName));
+        }
+
+        methodUtility.addReturnStatement(builderMethod, "builder");
 
         topLevelClass.add(builderMethod);
     }

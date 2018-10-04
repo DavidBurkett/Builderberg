@@ -60,8 +60,12 @@ public class AnnotationUtility {
     }
 
     public static void addGeneratedAnnotation(final PsiElementFactory psiElementFactory, final PsiModifierListOwner element) {
-        final PsiExpression expression = psiElementFactory.createExpressionFromText("\"" + GENERATOR_NAME + "\"", TypeUtils.getStringType(element).resolve());
-        element.getModifierList().addAnnotation(JAVAX_GENERATED).setDeclaredAttributeValue("value",  expression);
+        final PsiExpression value = psiElementFactory.createExpressionFromText("\"" + GENERATOR_NAME + "\"", TypeUtils.getStringType(element).resolve());
+        final PsiExpression version = psiElementFactory.createExpressionFromText("\"" + VersionUtility.getBuilderbergVersion() + "\"", TypeUtils.getStringType(element).resolve());
+        final PsiAnnotation generated = element.getModifierList().addAnnotation(JAVAX_GENERATED);
+        generated.setDeclaredAttributeValue("value",  value);
+        generated.setDeclaredAttributeValue("comments",  version);
+
     }
 
     public static void addOverrideAnnotation(final PsiMethod method) {

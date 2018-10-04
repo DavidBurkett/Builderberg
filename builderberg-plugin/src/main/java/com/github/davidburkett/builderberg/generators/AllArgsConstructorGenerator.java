@@ -19,7 +19,7 @@ public class AllArgsConstructorGenerator {
         this.psiElementFactory = PsiElementFactory.SERVICE.getInstance(project);
     }
 
-    public void generateAllArgsConstructor(final PsiClass topLevelClass, final PsiClass builderClass, final boolean jacksonSupport) {
+    public void generateAllArgsConstructor(final PsiClass topLevelClass, final boolean jacksonSupport) {
         final PsiMethod constructor = psiElementFactory.createConstructor();
         AnnotationUtility.addGeneratedAnnotation(psiElementFactory, constructor);
 
