@@ -3,19 +3,18 @@ package com.github.davidburkett.builderberg.generators;
 import com.github.davidburkett.builderberg.utilities.AnnotationUtility;
 import com.github.davidburkett.builderberg.utilities.MethodUtility;
 import com.github.davidburkett.builderberg.utilities.TypeUtility;
+import com.google.common.collect.ImmutableList;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.*;
 
 public class CloneGenerator {
     private final Project project;
     private final PsiElementFactory psiElementFactory;
-    private final JavadocGenerator javadocGenerator;
     private final MethodUtility methodUtility;
 
     public CloneGenerator(final Project project) {
         this.project = project;
         this.psiElementFactory = PsiElementFactory.SERVICE.getInstance(project);
-        this.javadocGenerator = new JavadocGenerator(psiElementFactory);
         this.methodUtility = new MethodUtility(psiElementFactory);
     }
 
@@ -30,7 +29,7 @@ public class CloneGenerator {
         methodUtility.addThrows(cloneMethod, "java.lang.CloneNotSupportedException");
 
         // Generate inheritDoc javadoc
-        javadocGenerator.generateInheritDocJavadocForMethod(cloneMethod);
+        methodUtility.addJavadoc(cloneMethod, ImmutableList.of("{@inheritDoc}"));
 
         // Add @Generated annotation
         AnnotationUtility.addGeneratedAnnotation(psiElementFactory, cloneMethod);

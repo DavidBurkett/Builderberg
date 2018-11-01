@@ -1,6 +1,7 @@
-package com.github.davidburkett.builderberg.generators;
+package com.github.davidburkett.builderberg.generators.builder;
 
 import com.github.davidburkett.builderberg.exceptions.InvalidConstraintException;
+import com.github.davidburkett.builderberg.generators.ValidationGenerator;
 import com.github.davidburkett.builderberg.utilities.ClassFactory;
 import com.github.davidburkett.builderberg.utilities.MethodUtility;
 import com.github.davidburkett.builderberg.utilities.QualifyingFieldsFinder;
@@ -19,14 +20,14 @@ public class BuilderClassGenerator {
     private final PsiElementFactory psiElementFactory;
     private final MethodUtility methodUtility;
     private final ValidationGenerator validationGenerator;
-    private final JavadocGenerator javadocGenerator;
+    private final SetterGenerator setterGenerator;
 
     public BuilderClassGenerator(final PsiElementFactory psiElementFactory) {
         this.classFactory = new ClassFactory(psiElementFactory);
         this.psiElementFactory = psiElementFactory;
         this.methodUtility = new MethodUtility(psiElementFactory);
         this.validationGenerator = new ValidationGenerator(psiElementFactory);
-        this.javadocGenerator = new JavadocGenerator(psiElementFactory);
+        this.setterGenerator = new SetterGenerator(psiElementFactory);
     }
 
     /**
@@ -43,7 +44,7 @@ public class BuilderClassGenerator {
         generateFields(builderClass, fields);
         generateConstructor(builderClass);
         generateCreateMethod(builderClass);
-        generateSetters(topLevelClass, builderClass, fields);
+        setterGenerator.generateSetters(topLevelClass, builderClass, fields);
         generateBuildMethod(topLevelClass, builderClass);
         generateValidateMethod(topLevelClass, builderClass, fields);
 
@@ -54,39 +55,6 @@ public class BuilderClassGenerator {
         for (final PsiField field : fields) {
             final PsiField builderField = psiElementFactory.createField(field.getName(), field.getType());
             builderClass.add(builderField);
-        }
-    }
-
-    private void generateSetters(final PsiClass topLevelClass, final PsiClass builderClass, final List<PsiField> fields) throws InvalidConstraintException {
-        final PsiType builderType = TypeUtils.getType(builderClass);
-
-        for (final PsiField field : fields) {
-            // Create method
-            final String fieldName = field.getName();
-            final String capitalizedFieldName = fieldName.substring(0, 1).toUpperCase() + fieldName.substring(1);
-            final PsiMethod withMethod = methodUtility.createPublicMethod("with" + capitalizedFieldName, builderType);
-
-            // Add parameter
-            PsiType parameterType = field.getType();
-            if (parameterType instanceof PsiArrayType) {
-                parameterType = new PsiEllipsisType(parameterType.getDeepComponentType());
-            }
-
-            methodUtility.addParameter(withMethod, fieldName, parameterType);
-
-            // Add javadoc
-            javadocGenerator.generateCommentForSetterMethod(withMethod, field);
-
-            // Validate input
-            validationGenerator.generateValidationForField(topLevelClass, withMethod, field);
-
-            // Assign value
-            methodUtility.addStatement(withMethod, "this." + fieldName + " = " + fieldName + ";");
-
-            // Return builder to allow method chaining
-            methodUtility.addStatement(withMethod, "return this;");
-
-            builderClass.add(withMethod);
         }
     }
 

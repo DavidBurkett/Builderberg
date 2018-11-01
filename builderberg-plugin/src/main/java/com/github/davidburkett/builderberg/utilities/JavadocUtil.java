@@ -2,24 +2,23 @@ package com.github.davidburkett.builderberg.utilities;
 
 import com.intellij.psi.PsiComment;
 import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiField;
-import com.intellij.psi.PsiMethod;
+import com.intellij.psi.PsiJavaDocumentedElement;
 import com.intellij.psi.javadoc.PsiDocComment;
 import org.apache.commons.lang.StringUtils;
 
 public class JavadocUtil {
-    public static void setMethodComment(final PsiMethod method, final PsiComment comment) {
-        final PsiDocComment docComment = method.getDocComment();
+    public static void setComment(final PsiJavaDocumentedElement element, final PsiComment comment) {
+        final PsiDocComment docComment = element.getDocComment();
         if (docComment != null) {
             docComment.replace(comment);
         } else {
-            method.addBefore(comment, method.getFirstChild());
+            element.addBefore(comment, element.getFirstChild());
         }
     }
 
-    public static String getFieldCommentText(final PsiField field) {
+    public static String getCommentText(final PsiJavaDocumentedElement element) {
         // TODO: Also check for line comments, if no javadoc exists.
-        final PsiDocComment fieldComment = field.getDocComment();
+        final PsiDocComment fieldComment = element.getDocComment();
         if (fieldComment != null) {
             final PsiElement[] descriptionElements = fieldComment.getDescriptionElements();
 

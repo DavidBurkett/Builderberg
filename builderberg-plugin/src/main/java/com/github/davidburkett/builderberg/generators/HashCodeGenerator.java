@@ -2,16 +2,15 @@ package com.github.davidburkett.builderberg.generators;
 
 import com.github.davidburkett.builderberg.utilities.AnnotationUtility;
 import com.github.davidburkett.builderberg.utilities.MethodUtility;
+import com.google.common.collect.ImmutableList;
 import com.intellij.psi.*;
 
 public class HashCodeGenerator {
     private final PsiElementFactory psiElementFactory;
-    private final JavadocGenerator javadocGenerator;
     private final MethodUtility methodUtility;
 
     public HashCodeGenerator(final PsiElementFactory psiElementFactory) {
         this.psiElementFactory = psiElementFactory;
-        this.javadocGenerator = new JavadocGenerator(psiElementFactory);
         this.methodUtility = new MethodUtility(psiElementFactory);
     }
 
@@ -24,7 +23,7 @@ public class HashCodeGenerator {
         final PsiMethod hashCodeMethod = methodUtility.createPublicMethod("hashCode", PsiType.INT);
 
         // Generate inheritDoc javadoc
-        javadocGenerator.generateInheritDocJavadocForMethod(hashCodeMethod);
+        methodUtility.addJavadoc(hashCodeMethod, ImmutableList.of("{@inheritDoc}"));
 
         // Add @Generated annotation
         AnnotationUtility.addGeneratedAnnotation(psiElementFactory, hashCodeMethod);

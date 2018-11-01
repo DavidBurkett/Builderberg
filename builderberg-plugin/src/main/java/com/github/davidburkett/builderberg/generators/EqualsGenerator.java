@@ -3,6 +3,7 @@ package com.github.davidburkett.builderberg.generators;
 import com.github.davidburkett.builderberg.utilities.AnnotationUtility;
 import com.github.davidburkett.builderberg.utilities.MethodUtility;
 import com.github.davidburkett.builderberg.utilities.TypeUtility;
+import com.google.common.collect.ImmutableList;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.*;
 import com.siyeh.ig.psiutils.TypeUtils;
@@ -10,13 +11,11 @@ import com.siyeh.ig.psiutils.TypeUtils;
 public class EqualsGenerator {
     private final Project project;
     private final PsiElementFactory psiElementFactory;
-    private final JavadocGenerator javadocGenerator;
     private final MethodUtility methodUtility;
 
     public EqualsGenerator(final Project project, final PsiElementFactory psiElementFactory) {
         this.project = project;
         this.psiElementFactory = psiElementFactory;
-        this.javadocGenerator = new JavadocGenerator(psiElementFactory);
         this.methodUtility = new MethodUtility(psiElementFactory);
     }
 
@@ -32,7 +31,7 @@ public class EqualsGenerator {
         methodUtility.addParameter(equalsMethod, "o", TypeUtility.getJavaLangObject(project));
 
         // Generate inheritDoc javadoc
-        javadocGenerator.generateInheritDocJavadocForMethod(equalsMethod);
+        methodUtility.addJavadoc(equalsMethod, ImmutableList.of("{@inheritDoc}"));
 
         // Add @Generated annotation
         AnnotationUtility.addGeneratedAnnotation(psiElementFactory, equalsMethod);
@@ -66,6 +65,8 @@ public class EqualsGenerator {
         final PsiType fieldType = field.getType();
         if (fieldType instanceof PsiPrimitiveType) {
             methodUtility.addIfStatement(equalsMethod, String.format("%s != obj.%s", fieldName, fieldName), "return false;");
+        } else if (fieldType instanceof PsiArrayType) {
+            methodUtility.addIfStatement(equalsMethod, String.format("!java.util.Arrays.equals(%s, obj.%s)", fieldName, fieldName), "return false;");
         } else {
             final String comparison = "if (!(field == obj.field || (field != null && field.equals(obj.field)))) { return false; }";
             methodUtility.addStatement(equalsMethod, comparison.replaceAll("field", fieldName));

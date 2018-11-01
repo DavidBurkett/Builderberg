@@ -3,6 +3,7 @@ package com.github.davidburkett.builderberg;
 import com.github.davidburkett.builderberg.enums.CollectionType;
 import com.github.davidburkett.builderberg.exceptions.InvalidConstraintException;
 import com.github.davidburkett.builderberg.generators.*;
+import com.github.davidburkett.builderberg.generators.builder.BuilderClassGenerator;
 import com.github.davidburkett.builderberg.utilities.*;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.*;
@@ -27,7 +28,7 @@ public class BuilderbergRunnable implements Runnable {
     private final AllArgsConstructorGenerator allArgsConstructorGenerator;
     private final CloneGenerator cloneGenerator;
     private final MethodUtility methodUtility;
-    private final JavadocGenerator javadocGenerator;
+    private final GetterGenerator getterGenerator;
 
     public BuilderbergRunnable(final Project project, final PsiClass topLevelClass) {
         this.project = project;
@@ -40,7 +41,7 @@ public class BuilderbergRunnable implements Runnable {
         this.allArgsConstructorGenerator = new AllArgsConstructorGenerator(project);
         this.cloneGenerator = new CloneGenerator(project);
         this.methodUtility = new MethodUtility(psiElementFactory);
-        this.javadocGenerator = new JavadocGenerator(psiElementFactory);
+        this.getterGenerator = new GetterGenerator(psiElementFactory);
     }
 
     @Override
@@ -61,7 +62,7 @@ public class BuilderbergRunnable implements Runnable {
                 allArgsConstructorGenerator.generateAllArgsConstructor(topLevelClass, jacksonSupport);
             }
 
-            generateGetters();
+            getterGenerator.generateGetters(topLevelClass);
 
             if (BuilderOptionUtility.generateToString(topLevelClass)) {
                 toStringGenerator.generateToStringMethod(topLevelClass);
@@ -130,10 +131,10 @@ public class BuilderbergRunnable implements Runnable {
 
         final List<PsiField> fields = QualifyingFieldsFinder.findQualifyingFields(topLevelClass);
         for (final PsiField field : fields) {
-            final String fieldName = field.getName();
-            final String capitalizedFieldName = fieldName.substring(0, 1).toUpperCase() + fieldName.substring(1);
+            final String setterName = MethodNameUtility.getSetterName(field);
+            final String getterName = MethodNameUtility.getGetterName(field);
 
-            methodUtility.addStatement(builderMethod, String.format("builder.with%s(instance.get%s());", capitalizedFieldName, capitalizedFieldName));
+            methodUtility.addStatement(builderMethod, String.format("builder.%s(instance.%s());", setterName, getterName));
         }
 
         methodUtility.addReturnStatement(builderMethod, "builder");
@@ -178,31 +179,5 @@ public class BuilderbergRunnable implements Runnable {
         }
 
         methodUtility.addStatement(constructor, String.format("this.%s = builder.%s;", fieldName, fieldName));
-    }
-
-    private void generateGetters() {
-        final List<PsiField> fields = Arrays.asList(topLevelClass.getFields());
-        for (PsiField field : fields) {
-            final String fieldName = field.getName();
-            final String capitalizedFieldName = fieldName.substring(0, 1).toUpperCase() + fieldName.substring(1);
-            final String getterMethodName = String.format("get%s", capitalizedFieldName);
-            generateGetter(field, getterMethodName);
-
-            if (TypeUtility.isPrimitiveBoolean(field.getType())) {
-                final String isMethodName = String.format("is%s", capitalizedFieldName);
-                generateGetter(field, isMethodName);
-            }
-        }
-    }
-
-    private void generateGetter(final PsiField field, final String getterMethodName) {
-        final PsiMethod getter = methodUtility.createPublicMethod(getterMethodName, field.getType());
-        javadocGenerator.generateCommentForGetterMethod(getter, field);
-
-        final String returnStatementText = String.format("return %s;", field.getName());
-        methodUtility.addStatement(getter, returnStatementText);
-        AnnotationUtility.addGeneratedAnnotation(psiElementFactory, getter);
-
-        topLevelClass.add(getter);
     }
 }

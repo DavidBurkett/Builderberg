@@ -92,6 +92,6 @@ public class MethodUtility {
         javadocBuilder.append("\n*/");
 
         final PsiComment comment = psiElementFactory.createCommentFromText(javadocBuilder.toString(), method);
-        JavadocUtil.setMethodComment(method, comment);
+        JavadocUtil.setComment(method, comment);
     }
 }
