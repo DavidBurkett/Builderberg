@@ -3,10 +3,7 @@ package com.github.davidburkett.builderberg.generators;
 import com.github.davidburkett.builderberg.utilities.AnnotationUtility;
 import com.github.davidburkett.builderberg.utilities.MethodUtility;
 import com.google.common.collect.ImmutableList;
-import com.intellij.psi.PsiClass;
-import com.intellij.psi.PsiElementFactory;
-import com.intellij.psi.PsiField;
-import com.intellij.psi.PsiMethod;
+import com.intellij.psi.*;
 import com.siyeh.ig.psiutils.TypeUtils;
 
 public class ToStringGenerator {
@@ -57,7 +54,12 @@ public class ToStringGenerator {
 
     private String createStringForField(final PsiField field) {
         final String fieldName = field.getName();
+        String fieldValue = field.getName();
 
-        return "'" + fieldName + "': '\" + " + fieldName + " + \"'";
+        if (field.getType() instanceof PsiArrayType) {
+            fieldValue = String.format("java.util.Arrays.toString(%s)", fieldName);
+        }
+
+        return String.format("'%s': '\" + %s + \"'", fieldName, fieldValue);
     }
 }
