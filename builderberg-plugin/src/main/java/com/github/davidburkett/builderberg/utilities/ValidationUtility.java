@@ -4,13 +4,13 @@ import com.intellij.psi.PsiAnnotation;
 import com.intellij.psi.PsiAnnotationParameterList;
 import com.intellij.psi.PsiField;
 import com.intellij.psi.PsiNameValuePair;
-import org.fest.util.Lists;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class ValidationUtility {
     public static List<PsiNameValuePair> getBuilderConstraintsForField(final PsiField field) {
-        final List<PsiNameValuePair> builderConstraints = Lists.newArrayList();
+        final List<PsiNameValuePair> builderConstraints = new ArrayList<>();
 
         final List<PsiAnnotation> builderConstraintAnnotations = AnnotationUtility.getBuilderConstraintAnnotations(field);
         for (final PsiAnnotation annotation : builderConstraintAnnotations) {

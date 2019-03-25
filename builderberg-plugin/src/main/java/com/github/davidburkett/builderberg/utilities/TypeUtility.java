@@ -4,8 +4,8 @@ import com.intellij.openapi.project.Project;
 import com.intellij.psi.*;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.siyeh.ig.psiutils.TypeUtils;
-import org.fest.util.Maps;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
@@ -80,7 +80,7 @@ public class TypeUtility {
     }
 
     private static PsiType unboxIfPossible(final PsiType type) {
-        final Map<String, PsiType> unboxedTypesByBoxedName = Maps.newHashMap();
+        final Map<String, PsiType> unboxedTypesByBoxedName = new HashMap<>();
         unboxedTypesByBoxedName.put(CommonClassNames.JAVA_LANG_BOOLEAN, PsiType.BOOLEAN);
         unboxedTypesByBoxedName.put(CommonClassNames.JAVA_LANG_BYTE, PsiType.BYTE);
         unboxedTypesByBoxedName.put(CommonClassNames.JAVA_LANG_SHORT, PsiType.SHORT);
@@ -138,7 +138,7 @@ public class TypeUtility {
     public static PsiType getTypeWithGenerics(final PsiClass psiClass, final PsiTypeParameter... classTypeParameters) {
         final PsiElementFactory factory = JavaPsiFacade.getElementFactory(psiClass.getProject());
         if (classTypeParameters.length > 0) {
-            final Map<PsiTypeParameter, PsiType> substitutionMap = Maps.newHashMap();
+            final Map<PsiTypeParameter, PsiType> substitutionMap = new HashMap<>();
             for (PsiTypeParameter typeParameter : classTypeParameters) {
                 substitutionMap.put(typeParameter, factory.createType(typeParameter));
             }

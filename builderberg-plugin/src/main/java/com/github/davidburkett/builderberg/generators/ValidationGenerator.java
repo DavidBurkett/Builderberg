@@ -7,8 +7,8 @@ import com.github.davidburkett.builderberg.utilities.TypeUtility;
 import com.github.davidburkett.builderberg.utilities.ValidationUtility;
 import com.intellij.psi.*;
 import com.siyeh.ig.psiutils.TypeUtils;
-import org.fest.util.Lists;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -31,7 +31,7 @@ public class ValidationGenerator {
      * @param field The {@link PsiField} to validate.
      */
     public void generateValidationForField(final PsiClass topLevelClass, final PsiMethod method, final PsiField field) throws InvalidConstraintException {
-        final List<PsiStatement> validationStatements = Lists.newArrayList();
+        final List<PsiStatement> validationStatements = new ArrayList<>();
 
         final PsiType exceptionType = BuilderOptionUtility.exceptionType(topLevelClass);
         final List<PsiNameValuePair> builderConstraints = ValidationUtility.getBuilderConstraintsForField(field);

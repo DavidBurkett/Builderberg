@@ -3,15 +3,15 @@ package com.github.davidburkett.builderberg.utilities;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiField;
 import com.intellij.psi.PsiModifier;
-import org.fest.util.Lists;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 public class QualifyingFieldsFinder {
 
     public static List<PsiField> findQualifyingFields(final PsiClass topLevelClass) {
-        final List<PsiField> qualifyingFields = Lists.newArrayList();
+        final List<PsiField> qualifyingFields = new ArrayList<>();
 
         final List<PsiField> fields = Arrays.asList(topLevelClass.getFields());
         for (final PsiField field : fields) {

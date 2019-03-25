@@ -8,8 +8,8 @@ import com.github.davidburkett.builderberg.utilities.MethodNameUtility;
 import com.github.davidburkett.builderberg.utilities.MethodUtility;
 import com.intellij.psi.*;
 import com.siyeh.ig.psiutils.TypeUtils;
-import org.fest.util.Lists;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class SetterGenerator {
@@ -61,7 +61,7 @@ public class SetterGenerator {
     }
 
     private void generateCommentForSetterMethod(final PsiMethod withMethod, final PsiField field) {
-        final List<String> javadocLines = Lists.newArrayList();
+        final List<String> javadocLines = new ArrayList<>();
 
         final String fieldCommentText = JavadocUtil.getCommentText(field);
         final String fieldJavaDoc = fieldCommentText != null ? fieldCommentText : "";

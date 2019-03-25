@@ -5,8 +5,8 @@ import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiElementFactory;
 import com.intellij.psi.PsiField;
 import com.intellij.psi.PsiMethod;
-import org.fest.util.Lists;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -43,7 +43,7 @@ public class GetterGenerator {
     }
 
     public void generateCommentForGetterMethod(final PsiMethod getterMethod, final PsiField field) {
-        final List<String> javadocLines = Lists.newArrayList();
+        final List<String> javadocLines = new ArrayList<>();
 
         final String fieldJavaDoc = JavadocUtil.getCommentText(field);
         final String returnJavadoc = fieldJavaDoc != null ? fieldJavaDoc : field.getName();

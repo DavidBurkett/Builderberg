@@ -2,8 +2,8 @@ package com.github.davidburkett.builderberg.utilities;
 
 import com.intellij.psi.*;
 import com.siyeh.ig.psiutils.TypeUtils;
-import org.fest.util.Lists;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -33,7 +33,7 @@ public class AnnotationUtility {
     }
 
     public static List<PsiAnnotation> getBuilderConstraintAnnotations(final PsiField field) {
-        final List<PsiAnnotation> builderConstaintAnnotations = Lists.newArrayList();
+        final List<PsiAnnotation> builderConstaintAnnotations = new ArrayList<>();
 
         final PsiAnnotation[] annotations = field.getAnnotations();
         for (final PsiAnnotation annotation : annotations) {

@@ -3,13 +3,13 @@ package com.github.davidburkett.builderberg.generators;
 import com.github.davidburkett.builderberg.utilities.ValidationUtility;
 import com.intellij.psi.PsiField;
 import com.intellij.psi.PsiNameValuePair;
-import org.fest.util.Lists;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class ValidationJavadocGenerator {
     public static List<String> generateValidationComments(final PsiField field, final String prefix) {
-        final List<String> validationComments = Lists.newArrayList();
+        final List<String> validationComments = new ArrayList<>();
 
         final List<PsiNameValuePair> builderConstraints = ValidationUtility.getBuilderConstraintsForField(field);
         for (final PsiNameValuePair builderConstraint : builderConstraints) {
