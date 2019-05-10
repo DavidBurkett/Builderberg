@@ -4,14 +4,13 @@ import com.github.davidburkett.builderberg.enums.CollectionType;
 import com.github.davidburkett.builderberg.exceptions.InvalidConstraintException;
 import com.github.davidburkett.builderberg.generators.*;
 import com.github.davidburkett.builderberg.generators.builder.BuilderClassGenerator;
+import com.github.davidburkett.builderberg.generators.builder.ParameterGenerator;
 import com.github.davidburkett.builderberg.utilities.*;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.*;
 import com.intellij.psi.util.PsiUtil;
 import com.siyeh.ig.psiutils.TypeUtils;
 
-import java.util.Arrays;
-import java.util.List;
 import java.util.Optional;
 
 /**
@@ -29,6 +28,7 @@ public class BuilderbergRunnable implements Runnable {
     private final CloneGenerator cloneGenerator;
     private final MethodUtility methodUtility;
     private final GetterGenerator getterGenerator;
+    private final ParameterGenerator parameterGenerator;
 
     public BuilderbergRunnable(final Project project, final PsiClass topLevelClass) {
         this.project = project;
@@ -42,6 +42,7 @@ public class BuilderbergRunnable implements Runnable {
         this.cloneGenerator = new CloneGenerator(project);
         this.methodUtility = new MethodUtility(psiElementFactory);
         this.getterGenerator = new GetterGenerator(psiElementFactory);
+        this.parameterGenerator = new ParameterGenerator(psiElementFactory);
     }
 
     @Override
@@ -108,7 +109,7 @@ public class BuilderbergRunnable implements Runnable {
         }
 
         // Make all fields final
-        final List<PsiField> fields = Arrays.asList(topLevelClass.getFields());
+        final PsiField[] fields = topLevelClass.getFields();
         for (PsiField field : fields) {
             PsiUtil.setModifierProperty(field, PsiModifier.FINAL, true);
         }
@@ -118,26 +119,18 @@ public class BuilderbergRunnable implements Runnable {
         final PsiMethod builderMethod = methodUtility.createPublicStaticMethod("builder", TypeUtils.getType(builderClass));
         AnnotationUtility.addGeneratedAnnotation(psiElementFactory, builderMethod);
 
-        methodUtility.addStatement(builderMethod, "return new Builder();");
+        methodUtility.addReturnStatement(builderMethod, "Builder.create()");
 
         topLevelClass.add(builderMethod);
     }
 
     private void generateBuilderFromExistingObjectMethod(final PsiClass builderClass) {
         final PsiMethod builderMethod = methodUtility.createPublicStaticMethod("builder", TypeUtils.getType(builderClass));
-        methodUtility.addParameter(builderMethod, "instance", TypeUtils.getType(topLevelClass));
+        final PsiParameter parameter = parameterGenerator.buildParameter(topLevelClass);
+        methodUtility.addParameter(builderMethod, parameter.getName(), parameter.getType());
+        AnnotationUtility.addGeneratedAnnotation(psiElementFactory, builderMethod);
 
-        methodUtility.addStatement(builderMethod, "final Builder builder = new Builder();");
-
-        final List<PsiField> fields = QualifyingFieldsFinder.findQualifyingFields(topLevelClass);
-        for (final PsiField field : fields) {
-            final String setterName = MethodNameUtility.getSetterName(field);
-            final String getterName = MethodNameUtility.getGetterName(field);
-
-            methodUtility.addStatement(builderMethod, String.format("builder.%s(instance.%s());", setterName, getterName));
-        }
-
-        methodUtility.addReturnStatement(builderMethod, "builder");
+        methodUtility.addReturnStatement(builderMethod, "Builder.create(" + parameter.getName() + ")");
 
         topLevelClass.add(builderMethod);
     }
@@ -154,7 +147,7 @@ public class BuilderbergRunnable implements Runnable {
         final boolean makeCollectionsImmutable = BuilderOptionUtility.makeCollectionsImmutable(topLevelClass);
 
         // Assign values
-        final List<PsiField> fields = Arrays.asList(topLevelClass.getFields());
+        final PsiField[] fields = topLevelClass.getFields();
         for (PsiField field : fields) {
             if (!field.hasModifierProperty(PsiModifier.STATIC)) {
                 generateAssignStatement(constructor, field, makeCollectionsImmutable);

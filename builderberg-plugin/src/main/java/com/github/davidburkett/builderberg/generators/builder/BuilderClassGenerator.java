@@ -21,6 +21,7 @@ public class BuilderClassGenerator {
     private final MethodUtility methodUtility;
     private final ValidationGenerator validationGenerator;
     private final SetterGenerator setterGenerator;
+    private final ParameterGenerator parameterGenerator;
 
     public BuilderClassGenerator(final PsiElementFactory psiElementFactory) {
         this.classFactory = new ClassFactory(psiElementFactory);
@@ -28,6 +29,7 @@ public class BuilderClassGenerator {
         this.methodUtility = new MethodUtility(psiElementFactory);
         this.validationGenerator = new ValidationGenerator(psiElementFactory);
         this.setterGenerator = new SetterGenerator(psiElementFactory);
+        parameterGenerator = new ParameterGenerator(psiElementFactory);
     }
 
     /**
@@ -43,7 +45,9 @@ public class BuilderClassGenerator {
 
         generateFields(builderClass, fields);
         generateConstructor(builderClass);
+        generateConstructorWithBaseline(topLevelClass, builderClass, fields);
         generateCreateMethod(builderClass);
+        generateCreateMethodWithBaseline(topLevelClass, builderClass);
         setterGenerator.generateSetters(topLevelClass, builderClass, fields);
         generateBuildMethod(topLevelClass, builderClass);
         generateValidateMethod(topLevelClass, builderClass, fields);
@@ -69,6 +73,20 @@ public class BuilderClassGenerator {
         builderClass.add(createMethod);
     }
 
+    private void generateCreateMethodWithBaseline(final PsiClass topLevelClass, final PsiClass builderClass) {
+        final PsiType builderType = TypeUtils.getType(builderClass);
+        final PsiMethod createMethod = methodUtility.createPublicStaticMethod("create", builderType);
+
+        final PsiParameter parameter = parameterGenerator.buildParameter(topLevelClass);
+        methodUtility.addParameter(createMethod, parameter.getName(), parameter.getType());
+
+        final String builderClassName = builderClass.getName();
+        final String generics = builderClass.hasTypeParameters() ? "<>" : "";
+        methodUtility.addStatement(createMethod, "return new " + builderClassName + generics + "(" + parameter.getName() + ");");
+
+        builderClass.add(createMethod);
+    }
+
     private void generateBuildMethod(final PsiClass topLevelClass, final PsiClass builderClass) {
         final PsiType topLevelType = TypeUtility.getTypeWithGenerics(topLevelClass, topLevelClass.getTypeParameters());
         final PsiMethod buildMethod = methodUtility.createPublicMethod("build", topLevelType);
@@ -85,6 +103,24 @@ public class BuilderClassGenerator {
         PsiUtil.setModifierProperty(constructor, PsiModifier.PRIVATE, true);
 
         builderClass.add(constructor);
+    }
+
+    private void generateConstructorWithBaseline(final PsiClass topLevelClass, final PsiClass builderClass, final List<PsiField> fields) {
+        final PsiMethod constructor = psiElementFactory.createConstructor();
+        final PsiParameter parameter = parameterGenerator.buildParameter(topLevelClass);
+        constructor.getParameterList().add(parameter);
+
+        generateConstructorWithBaselineBody(constructor, parameter.getName(), fields);
+
+        builderClass.add(constructor);
+    }
+
+    private void generateConstructorWithBaselineBody(final PsiMethod constructor, final String baselineParameterName, final List<PsiField> fields) {
+        for (final PsiField field : fields) {
+            final String fieldName = field.getName();
+            final String capitalizedFieldName = fieldName.substring(0, 1).toUpperCase() + fieldName.substring(1);
+            methodUtility.addStatement(constructor, String.format("this.%s = %s.get%s();", fieldName, baselineParameterName, capitalizedFieldName));
+        }
     }
 
     private void generateValidateMethod(final PsiClass topLevelClass, final PsiClass builderClass, final List<PsiField> fields) throws InvalidConstraintException {
