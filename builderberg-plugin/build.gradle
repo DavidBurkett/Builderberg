@@ -15,7 +15,7 @@ apply plugin: 'signing'
 
 group = 'com.github.davidburkett'
 archivesBaseName = 'builderberg-plugin'
-version = '1.1.1'
+version = '1.1.3'
 ext.packaging = 'jar'
 
 
@@ -54,8 +54,6 @@ intellij {
 }
 patchPluginXml {
     changeNotes """
-    - Implemented support for the latest builderberg annotations.
-    - BuilderOptions: deserializable, minimumPluginVersion, generateAllArgsConstructor, etc.
-    - CustomLogic: Any methods or inner-classes annotated with @CustomLogic will be preserved during builder generation.
+    - Update hashCode generation locic to take into account Enum members. Java does not guarantee the same hashCode for the same value for different sessions.
     """
 }
