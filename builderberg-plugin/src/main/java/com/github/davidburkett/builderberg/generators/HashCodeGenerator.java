@@ -5,6 +5,9 @@ import com.github.davidburkett.builderberg.utilities.MethodUtility;
 import com.google.common.collect.ImmutableList;
 import com.intellij.psi.*;
 
+import java.util.Arrays;
+import java.util.stream.Collectors;
+
 public class HashCodeGenerator {
     private final PsiElementFactory psiElementFactory;
     private final MethodUtility methodUtility;
@@ -31,46 +34,25 @@ public class HashCodeGenerator {
         // Add @Override annotation
         AnnotationUtility.addOverrideAnnotation(hashCodeMethod);
 
-        methodUtility.addStatement(hashCodeMethod, "int result = 17;");
-
-        createFieldStatements(topLevelClass, hashCodeMethod);
-
         // Add return statement
-        methodUtility.addReturnStatement(hashCodeMethod, "result");
+        methodUtility.addReturnStatement(hashCodeMethod, getHashCodeArguments(topLevelClass));
 
         topLevelClass.add(hashCodeMethod);
     }
 
-    private void createFieldStatements(final PsiClass topLevelClass, final PsiMethod hashCodeMethod) {
+    private String getHashCodeArguments(final PsiClass topLevelClass) {
         final PsiField[] fields = topLevelClass.getFields();
-        for (final PsiField field : fields) {
-            final String fieldValue = getValueForField(field);
-            final String statement = "result = 31 * result + " + fieldValue + ";";
-            methodUtility.addStatement(hashCodeMethod, statement);
-        }
-    }
-
-    private String getValueForField(final PsiField field) {
-        final String fieldName = field.getName();
-
-        final PsiType type = field.getType();
-        if (type instanceof PsiPrimitiveType) {
-            if (type == PsiType.BOOLEAN) {
-                return "(" + fieldName + " ? 1 : 0)";
-            } else if (type == PsiType.BYTE || type == PsiType.CHAR || type == PsiType.SHORT || type == PsiType.INT) {
-                return "(int)" + fieldName;
-            } else if (type == PsiType.LONG) {
-                return "(int) (" + fieldName + " ^ (" + fieldName + " >>> 32))";
-            } else if (type == PsiType.FLOAT) {
-                return "Float.floatToIntBits(" + fieldName + ")";
-            } else if (type == PsiType.DOUBLE) {
-                final String doubleToLong = "Double.doubleToLongBits(" + fieldName + ")";
-                return "(int) (" + doubleToLong + " ^ (" + doubleToLong + " >>> 32))";
+        final String hashCodeParams = Arrays.stream(fields).map(field -> {
+            final PsiType type = field.getType();
+            final String fieldName = field.getName();
+            final boolean isEnum = type.getSuperTypes()[0].getCanonicalText().startsWith("java.lang.Enum");
+            if (isEnum) {
+                return String.format("(%s != null ? %s.name().hashCode() : 0)", fieldName, fieldName);
             }
-        } else {
-            return "java.util.Objects.hashCode(" + fieldName + ")";
-        }
 
-        return "0";
+            return fieldName;
+        }).collect(Collectors.joining(", "));
+
+        return String.format("java.util.Objects.hash(%s)", hashCodeParams);
     }
 }
