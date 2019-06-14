@@ -45,7 +45,8 @@ public class HashCodeGenerator {
         final String hashCodeParams = Arrays.stream(fields).map(field -> {
             final PsiType type = field.getType();
             final String fieldName = field.getName();
-            final boolean isEnum = type.getSuperTypes()[0].getCanonicalText().startsWith("java.lang.Enum");
+            final PsiType[] superTypes = type.getSuperTypes();
+            final boolean isEnum = superTypes.length > 0 && superTypes[0].getCanonicalText().startsWith("java.lang.Enum");
             if (isEnum) {
                 return String.format("(%s != null ? %s.name().hashCode() : 0)", fieldName, fieldName);
             }
