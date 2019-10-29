@@ -5,6 +5,7 @@ import com.github.davidburkett.builderberg.utilities.QualifyingFieldsFinder;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.*;
 import com.intellij.psi.util.PsiUtil;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.List;
 import java.util.Optional;
@@ -61,8 +62,8 @@ public class AllArgsConstructorGenerator {
         for (final PsiField field : fields) {
             final String fieldName = field.getName();
 
-            final String capitalizedFieldName = fieldName.substring(0, 1).toUpperCase() + fieldName.substring(1);
-            statementText.append(".with" + capitalizedFieldName + "(" + fieldName + ")");
+            final String capitalizedFieldName = StringUtils.capitalize(fieldName);
+            statementText.append(String.format(".with%s(%s)", capitalizedFieldName, fieldName));
         }
 
         statementText.append(");");
