@@ -52,7 +52,7 @@ public class HashCodeGenerator {
             }
 
             return fieldName;
-        }).collect(Collectors.joining(", "));
+        }).collect(Collectors.joining(","));
 
         return String.format("java.util.Objects.hash(%s)", hashCodeParams);
     }
