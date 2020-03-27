@@ -10,8 +10,8 @@ import java.lang.annotation.Target;
  * @since 1.1.0
  * NOTE: 1.0.3 and older will ignore these options.
  */
-@Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
+@Retention(RetentionPolicy.SOURCE)
 public @interface BuilderOptions {
     /**
      * Generates constructors, annotations, and/or methods to support the specified DeserializationTypes.

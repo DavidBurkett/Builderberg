@@ -9,7 +9,7 @@ import java.lang.annotation.Target;
  * Validation logic will be applied to fields annotated with this.
  * @since 1.0.0
  */
-@Target({ElementType.FIELD})
+@Target(ElementType.FIELD)
 @Retention(RetentionPolicy.SOURCE)
 public @interface BuilderConstraint {
     boolean notNull() default false;
