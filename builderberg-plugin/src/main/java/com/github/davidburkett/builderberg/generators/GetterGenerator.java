@@ -1,10 +1,7 @@
 package com.github.davidburkett.builderberg.generators;
 
 import com.github.davidburkett.builderberg.utilities.*;
-import com.intellij.psi.PsiClass;
-import com.intellij.psi.PsiElementFactory;
-import com.intellij.psi.PsiField;
-import com.intellij.psi.PsiMethod;
+import com.intellij.psi.*;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -20,8 +17,14 @@ public class GetterGenerator {
     }
 
     public void generateGetters(final PsiClass topLevelClass) {
+        final boolean excludeStaticFields = BuilderOptionUtility.excludeStaticFields(topLevelClass);
+
         final List<PsiField> fields = Arrays.asList(topLevelClass.getFields());
         for (PsiField field : fields) {
+            if (excludeStaticFields && field.hasModifierProperty(PsiModifier.STATIC)) {
+                continue;
+            }
+
             final String getterMethodName = MethodNameUtility.getGetterName(field);
             generateGetter(topLevelClass, field, getterMethodName);
 

@@ -13,7 +13,7 @@ apply plugin: 'signing'
 
 group = 'com.github.davidburkett'
 archivesBaseName = 'builderberg-plugin'
-version = '1.2.1'
+version = '1.2.2'
 ext.packaging = 'jar'
 
 repositories {
@@ -53,6 +53,6 @@ intellij {
 }
 patchPluginXml {
     changeNotes """
-    - Update hashCode generation locic to take into account Enum members. Java does not guarantee the same hashCode for the same value for different sessions.
+    - Add excludeStaticFields builder option to exclude static fields from getter, hashCode, equals, and toString methods.
     """
 }

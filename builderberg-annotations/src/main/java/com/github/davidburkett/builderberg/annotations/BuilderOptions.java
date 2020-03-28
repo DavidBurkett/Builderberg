@@ -61,4 +61,12 @@ public @interface BuilderOptions {
      * @return {@code true} if collections for generated objects should be made immutable.
      */
     boolean makeCollectionsImmutable() default false;
+
+    /**
+     * Excludes static fields from getter, hashCode, equals, and toString methods. This behavior is preferred but is
+     * disabled by default to avoid breaking existing consumers.
+     *
+     * @since 1.1.3
+     */
+    boolean excludeStaticFields() default false;
 }

@@ -22,7 +22,7 @@ Search for "Builderberg" and install the plugin.
 ##### BuilderConstraint Annotations
 If you're looking to leverage the power of BuilderConstraints (notNull, notEmpty, notBlank, notNull, notNegative, etc.), BuilderOptions (deserializable, minimumPluginVersion, exceptionType, generateClone, etc.), or CustomLogic you'll need to include the builderberg-annotations module in your projects.
 Using gradle:
-* compileOnly group: 'com.github.davidburkett', name: 'builderberg-annotations', version: '1.1.2'
+* compileOnly group: 'com.github.davidburkett', name: 'builderberg-annotations', version: '1.1.3'
 
 ## Usage
 
