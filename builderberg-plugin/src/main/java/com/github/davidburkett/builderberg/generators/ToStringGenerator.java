@@ -1,6 +1,7 @@
 package com.github.davidburkett.builderberg.generators;
 
 import com.github.davidburkett.builderberg.utilities.AnnotationUtility;
+import com.github.davidburkett.builderberg.utilities.BuilderOptionUtility;
 import com.github.davidburkett.builderberg.utilities.MethodUtility;
 import com.google.common.collect.ImmutableList;
 import com.intellij.psi.*;
@@ -35,16 +36,26 @@ public class ToStringGenerator {
     }
 
     private void addReturnStatement(final PsiClass topLevelClass, final PsiMethod toStringMethod) {
+        final boolean excludeStaticFields = BuilderOptionUtility.excludeStaticFields(topLevelClass);
+
         // Generate string value
         final StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append("\"{");
         final PsiField[] fields = topLevelClass.getFields();
+        boolean includedField = false;
         for (int i = 0; i < fields.length; i++) {
-            if (i != 0) {
-                stringBuilder.append(",");
+            final PsiField field = fields[i];
+
+            if (excludeStaticFields && field.hasModifierProperty(PsiModifier.STATIC)) {
+                continue;
             }
 
-            final PsiField field = fields[i];
+            if (includedField) {
+                stringBuilder.append(",");
+            } else {
+                includedField = true;
+            }
+
             stringBuilder.append(createStringForField(field));
         }
         stringBuilder.append("}\"");

@@ -1,6 +1,7 @@
 package com.github.davidburkett.builderberg.generators;
 
 import com.github.davidburkett.builderberg.utilities.AnnotationUtility;
+import com.github.davidburkett.builderberg.utilities.BuilderOptionUtility;
 import com.github.davidburkett.builderberg.utilities.MethodUtility;
 import com.github.davidburkett.builderberg.utilities.TypeUtility;
 import com.google.common.collect.ImmutableList;
@@ -49,8 +50,15 @@ public class EqualsGenerator {
         // Add type casting
         methodUtility.addStatement(equalsMethod, String.format("final %s obj = (%s) o;", typeName, typeName));
 
+        // Check if excludeStaticFields is enabled
+        final boolean excludeStaticFields = BuilderOptionUtility.excludeStaticFields(topLevelClass);
+
         // Add comparison for each field
         for (final PsiField field : topLevelClass.getFields()) {
+            if (excludeStaticFields && field.hasModifierProperty(PsiModifier.STATIC)) {
+                continue;
+            }
+
             generateFieldComparison(equalsMethod, field);
         }
 

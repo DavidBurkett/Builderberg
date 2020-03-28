@@ -1,11 +1,13 @@
 package com.github.davidburkett.builderberg.generators;
 
 import com.github.davidburkett.builderberg.utilities.AnnotationUtility;
+import com.github.davidburkett.builderberg.utilities.BuilderOptionUtility;
 import com.github.davidburkett.builderberg.utilities.MethodUtility;
 import com.google.common.collect.ImmutableList;
 import com.intellij.psi.*;
 
 import java.util.Arrays;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 public class HashCodeGenerator {
@@ -41,19 +43,30 @@ public class HashCodeGenerator {
     }
 
     private String getHashCodeArguments(final PsiClass topLevelClass) {
-        final PsiField[] fields = topLevelClass.getFields();
-        final String hashCodeParams = Arrays.stream(fields).map(field -> {
-            final PsiType type = field.getType();
-            final String fieldName = field.getName();
-            final PsiType[] superTypes = type.getSuperTypes();
-            final boolean isEnum = superTypes.length > 0 && superTypes[0].getCanonicalText().startsWith("java.lang.Enum");
-            if (isEnum) {
-                return String.format("(%s != null ? %s.name().hashCode() : 0)", fieldName, fieldName);
-            }
+        final boolean excludeStaticFields = BuilderOptionUtility.excludeStaticFields(topLevelClass);
 
-            return fieldName;
-        }).collect(Collectors.joining(","));
+        final PsiField[] fields = topLevelClass.getFields();
+        final String hashCodeParams = Arrays.stream(fields)
+                .map(field -> getHashCodeArgument(field, excludeStaticFields))
+                .filter(Objects::nonNull)
+                .collect(Collectors.joining(","));
 
         return String.format("java.util.Objects.hash(%s)", hashCodeParams);
+    }
+
+    private String getHashCodeArgument(final PsiField field, final boolean excludeStaticFields) {
+        if (excludeStaticFields && field.hasModifierProperty(PsiModifier.STATIC)) {
+            return null;
+        }
+
+        final PsiType type = field.getType();
+        final String fieldName = field.getName();
+        final PsiType[] superTypes = type.getSuperTypes();
+        final boolean isEnum = superTypes.length > 0 && superTypes[0].getCanonicalText().startsWith("java.lang.Enum");
+        if (isEnum) {
+            return String.format("(%s != null ? %s.name().hashCode() : 0)", fieldName, fieldName);
+        }
+
+        return fieldName;
     }
 }

@@ -115,6 +115,18 @@ public class BuilderOptionUtility {
         return false;
     }
 
+    public static boolean excludeStaticFields(final PsiClass topLevelClass) {
+        final PsiAnnotationMemberValue value = getBuilderOption(topLevelClass, "excludeStaticFields");
+        if (value != null) {
+            final String text = value.getText();
+            if (text != null && text.equals("true")) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     private static PsiAnnotationMemberValue getBuilderOption(final PsiClass topLevelClass, final String attributeName) {
         final Optional<PsiAnnotation> psiAnnotationOptional = AnnotationUtility.getBuilderOptionsAnnotation(topLevelClass);
 
